@@ -2,43 +2,528 @@
 	"erythromycin": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+			},
+			"nausea": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"stomach_cramping": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"irregular_heartbeat": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0 
+      },
+			"fatigue": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"muscle_stiffness": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"blurred_vision": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": .2,
+				"better": .8
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      }
 		}
 	},
 	"dihydroergotamine": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": .2,
+				"same": .2,
+				"better": .6
+			},
+			"nausea": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"stomach_cramping": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"irregular_heartbeat": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"fatigue": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+
+      },
+			"muscle_stiffness": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"blurred_vision": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      }
 		}
 	},
 	"prednisone": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+			},
+			"nausea": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"stomach_cramping": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"irregular_heartbeat": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"fatigue": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"muscle_stiffness": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"blurred_vision": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": .11,
+				"better": .89
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": .11,
+				"better": .89
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": .11,
+				"better": .89
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      }
 		}
 	},
 	"lisinopril": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+			},
+			"nausea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+
+      },
+			"stomach_cramping": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"irregular_heartbeat": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"fatigue": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"muscle_stiffness": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"blurred_vision": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": .11,
+				"better": .89
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      }
 		}
 	},
-	"pulmocort": {
+	"pulmicort": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+			},
+			"nausea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"stomach_cramping": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"irregular_heartbeat": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"fatigue": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"muscle_stiffness": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"blurred_vision": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": .13,
+				"better": .87
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      }
 		}
 	},
 	"tegretol": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+			},
+			"nausea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"stomach_cramping": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"irregular_heartbeat": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fatigue": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"muscle_stiffness": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"blurred_vision": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": .3,
+				"better": .7
+      }
 		}
 	},
 	"aspirin": {
 		"name": "",
 		"effects": {
-			
+			"headache": {
+				"worse": .05,
+				"same": .52,
+				"better": .43
+			},
+			"nausea": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"stomach_cramping": {
+				"worse": "mc",
+				"same": "1-mc",
+				"better": 0
+      },
+			"diarrhea": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"irregular_heartbeat": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      },
+			"fatigue": {
+				"worse": "lc",
+				"same": "1-lc",
+				"better": 0
+      },
+			"muscle_stiffness": {
+				"worse": 0,
+				"same": .3,
+				"better": .7
+      },
+			"blurred_vision": {
+				"worse": "rare",
+				"same": "1-rare",
+				"better": 0
+      },
+			"fight_infection": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"immune_suppressant": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"fight_inflammation": {
+				"worse": 0,
+				"same": .5,
+				"better": .5
+      },
+			"fight_asthma": {
+				"worse": 0,
+				"same": 1,
+				"better": 0 
+      },
+			"lower_bp": {
+				"worse": 0,
+				"same": .1,
+				"better": .9
+      },
+			"fight_seizures": {
+				"worse": 0,
+				"same": 1,
+				"better": 0
+      }
 		}
 	}
 }

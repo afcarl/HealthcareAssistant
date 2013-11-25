@@ -8,7 +8,7 @@
 	"Plan B": {
 		"name": "Plan B",
 		"description": "Seizures",
-		"description": 2,
+		"doctor": 2,
 		"treatments": ["tegretol", "dihydroergotamine"]
 	}
 }
