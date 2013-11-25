@@ -1,0 +1,13 @@
+{
+	"plan A": {
+		"name": "Plan A",
+		"doctor": "1",
+		"treatments": ["pumicort", "penicilin"]
+	},
+	"plan B": {
+		"name": "Plan A",
+		"doctor": "2",
+		"treatments": ["penicilin"]
+	}
+}
+
