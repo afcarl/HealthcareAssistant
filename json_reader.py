@@ -16,6 +16,12 @@ class Treatment():
 			if effect == e[0]: return True
 		return False
 
+	def __str__(self):
+		return self.name
+
+	def __repr__(self):
+		return "TREATMENT(" + self.__str__() + ")"
+
 class Plan():
 	""" A class for representing caretaker plans """
 	def __init__(self, dictionary, treatments):
@@ -31,14 +37,20 @@ class Plan():
 				return True
 		return False
 
+	def __str__(self):
+		return "PLAN(" + self.name + ")=" + str(self.treatments)
+
+	def __repr__(self):
+		return self.__str__()
+
 class PlanSystem():
 	""" The system responsible for detecting conflicts and notifying people """
 	def __init__(self):
-		treatment_json = open("treatments.json")
+		treatment_json = open("real_treatments.json")
 		self.raw_treatments = json.load(treatment_json)
 		treatment_json.close()
 
-		plan_json = open("plans.json")
+		plan_json = open("real_plans.json")
 		self.raw_plans = json.load(plan_json)
 		plan_json.close()
 
@@ -58,7 +70,7 @@ class PlanSystem():
 
 p = PlanSystem()
 print "PLANS:", p.plans
-print "TREATMENTS:", p.treatment_json
+print "TREATMENTS:", p.treatments
 
-print "PLANS WITH EATING EFFECT", [plan for plan in p.plans if plan.has_effect("eating")]
+print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if plan.has_effect("nausea")]
 

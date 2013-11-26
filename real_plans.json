@@ -3,7 +3,7 @@
 		"name": "Plan A",
 		"description": "Stem cell therapy",
 		"doctor": 1,
-		"treatments": ["prednisone", "erythromycine"]
+		"treatments": ["prednisone", "erythromycin"]
 	},
 	"Plan B": {
 		"name": "Plan B",
