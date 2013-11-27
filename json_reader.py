@@ -57,7 +57,7 @@ class PlanSystem():
 		self.treatments = {}
 		for t in self.raw_treatments:
 			self.treatments[t]=(Treatment(self.raw_treatments[t]))
-		print "TREATMENTS", self.treatments
+		#print "TREATMENTS", self.treatments
 
 		self.plans = []
 		for p in self.raw_plans:
