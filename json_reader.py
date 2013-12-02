@@ -98,7 +98,7 @@ class PlanSystem():
 
 		new_neutral = neutral * T.effects[E].same
 
-		return new_better_list, new_worse_list, new_conf_list, new_neutral
+		return nbl, nwl, ncl, new_neutral
 
 	def evaluate_conflicts(self, plans, conflicting_effects):
 		# CAN CHECK MORE THAN TWO PLANS
