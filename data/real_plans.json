@@ -9,6 +9,6 @@
 		"name": "Plan B",
 		"description": "Seizures",
 		"doctor": 2,
-		"treatments": ["tegretol", "dihydroergotamine", "erythromycin"]
+		"treatments": ["tegretol", "aspirin"]
 	}
 }
