@@ -1,6 +1,6 @@
 def get_conflicts(LoT_affecting_1_effect):
 	pos_list = [(1, [LoT[0].name], LoT[0].pos)]
-	neg_list = [(1, [LoT[0].name], LoT[0].neg)]
+	neg_list = [(-1, [LoT[0].name], LoT[0].neg)]
 	conf_list = []
 	neutral = LoT[0].neu
 
