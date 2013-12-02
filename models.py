@@ -1,26 +1,19 @@
 class Treatment():
 	""" A class representing all known treatments """
-	def __init__(self, dictionary):
+
+	def __init__(self, data):
 		""" Initialize a treatment from a dict object with the necessary attributes"""
-		self.name = dictionary["name"]
-		self.effects = []
-		for e in dictionary["effects"]:
-			worse, better, same = dictionary["effects"][e]["worse"], dictionary["effects"][e]["better"], dictionary["effects"][e]["same"]
-			self.effects.append( TreatmentEffect(e, worse, better, same) )
-
-
-
-	def has_effect(self, effect):
-		""" Check if the treatment has a specific effect """
-		for e in self.effects:
-			if effect == e[0]: return True
-		return False
+		self.name = data["name"]
+		self.effects = {}
+		for e in data["effects"]:
+			p = data["effects"][e]
+			self.effects[e] = TreatmentEffect(e, p["worse"], p["better"], p["same"])
 
 	def __str__(self):
 		return self.name
 
 	def __repr__(self):
-		return "treatment(" + self.__str__() + ")"
+		return "Treatment(" + self.__str__() + ")"
 
 class TreatmentEffect:
 	def __init__(self, name, worse, better, same):
@@ -31,33 +24,34 @@ class TreatmentEffect:
 
 class Plan():
 	""" A class for representing caretaker plans """
-	def __init__(self, dictionary, treatments):
+	def __init__(self, data, treatments):
 		""" Initialize a plan from a dict object with the necessary attributes"""
-		self.name = dictionary["name"]
+		self.name = data["name"]
 		self.treatments = []
-		for t in dictionary["treatments"]:
+		self.effects = {}
+
+		for t in data["treatments"]:
 			self.treatments.append(treatments[t])
+
 		self.calculate_effects()
 
 	def calculate_effects(self):
 		""" Calculate all effects of a plan, and which treatments in the plan that causes them """
 		# Reset effects
-		self.effects = {}
-		for treatment in self.treatments:
-			for effect in treatment.effects:
-				if effect.name not in self.effects: self.effects[effect.name] = set()
-				self.effects[effect.name].add(treatment)
-
-	def has_effect(self, effect):
-		""" Check if any of the treatments in a plan has a specific side effect """
-		return effect in self.effects
+		for t in self.treatments:
+			for effect_name in t.effects:
+				self.effects.setdefault(effect_name, set()).add(t)
 
 	def __str__(self):
-		return "PLAN(" + self.name + ")"
+		return self.name
 
 	def __repr__(self):
-		return self.__str__()
+		return "PLAN(" + self.__str__() + ")"
 
+
+##################################################
+######### NOT IMPLEMENTED/USED YET ###############
+##################################################
 class PlanConflict():
 	def __init__(self, plan_a, plan_b):
 		self.plan_a = plan_a

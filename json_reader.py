@@ -11,32 +11,30 @@ class PlanSystem():
 		self.treatments = {} # All known treatments
 		self.plans = [] # All plans in the system
 	
-		self.load_treatments("data/real_treatments2.json")
+		self.load_treatments("data/real_treatments3.json")
 		self.load_plans("data/real_plans.json")
 
 	def load_plans(self, path):
 		""" 
 			Load a set of plans from the supplied path. Does not chbeck for conflicts
 		"""
-		plan_json = open(path)
-		self.raw_plans = json.load(plan_json)
-		plan_json.close()
-		for p in self.raw_plans:
-			self.plans.append(Plan(self.raw_plans[p], self.treatments))
+		with  open(path, 'r') as data:
+			raw_plans = json.load(data)
+
+		for rp in raw_plans:
+			p = Plan(raw_plans[rp], self.treatments)
+			self.plans.append(p)
 
 	def load_treatments(self, path):
-		treatment_json = open(path)
-		self.raw_treatments = json.load(treatment_json)
-		treatment_json.close()
 
-		for t in self.raw_treatments:
-			self.treatments[t] = Treatment(self.raw_treatments[t])
-			for effect in self.treatments[t].effects:
-				if effect.name in self.effect_table:
-					self.effect_table[effect.name].add(self.treatments[t])
-				else:
-					self.effect_table[effect.name] = {self.treatments[t]}
+		with open(path, 'r') as data:
+			raw_treatments = json.load(data)
 
+		for rt in raw_treatments:
+			t = Treatment(raw_treatments[rt])
+			self.treatments[rt] = t
+			for effect_name in t.effects:
+				self.effect_table.setdefault(effect_name, set()).add(t)
 
 
 	def find_conflicts(self, plan_a, plan_b):
@@ -45,9 +43,9 @@ class PlanSystem():
 			Does not check if the same treatment in both plan causes it
 		"""
 		conflicting_effects = set()
-		for effa in plan_a.effects:
-			if effa in plan_b.effects:
-				conflicting_effects.add(effa)
+		for ea in plan_a.effects: # Effect A
+			if ea in plan_b.effects:
+				conflicting_effects.add(ea)
 		return conflicting_effects
 
 	def treatment_intersection(self, plan_a, plan_b):
@@ -55,15 +53,11 @@ class PlanSystem():
 			Check if two plans use any of the same treatmetns
 		"""
 		shared_treatments = set()
-		for effa in plan_a.effects:
-			if effa in plan_b.effects:
-				in_both = plan_a.effects[effa].intersection(plan_b.effects[effa])
-
+		for ea in plan_a.effects: # Effect A
+			if ea in plan_b.effects:
+				in_both = plan_a.effects[ea].intersection(plan_b.effects[ea])
 				shared_treatments |= in_both
 		return shared_treatments
-
-	def plan_report(plan):
-		""" Return a summary of all effects of a plan """
 
 	def get_conflicts(self, E, *treatments):
 		print treatments
@@ -106,6 +100,29 @@ class PlanSystem():
 
 		return new_better_list, new_worse_list, new_conf_list, new_neutral
 
+	def evaluate_conflicts(self, conflicting_effects):
+		# CAN CHECK MORE THAN TWO PLANS
+		# USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
+		total_effects = {}
+		for e in conflicting_effects:
+			print e, "is caused by"
+			better, same, worse = 0, 0, 0
+
+			for t in p.effect_table[e]:
+				if t in A.treatments: print "A", t
+				if t in B.treatments: print "B", t
+
+
+				better += float(t.effects[e].better)
+				same += float(t.effects[e].same)
+				worse += float(t.effects[e].worse)
+			total_effects[e] = (better, same, worse)
+				# AGGREGATE EFFECTS HERE
+				# COMPARE IF THEY ARE POSITIVE OR NEGATIVE
+				# AND IF THE GIVE THE CONFLICT A SCORE
+				# WE CAN USE TO DECIDE IF WE SHOULD ALERT
+				# ANYONE
+		return total_effects
 
 
 if __name__ == '__main__':
@@ -117,22 +134,9 @@ if __name__ == '__main__':
 	conflicting_effects = p.find_conflicts(A,B)
 
 	# THE FOLLOWING SHOULD BE EXTRACTED INTO A METHOD
-	# CAN CHECK MORE THAN TWO PLANS
-	# USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
-
-	total_effects = {}
-	for e in conflicting_effects:
-		print e, "is caused by"
-		for t in p.effect_table[e]:
-			if t in A.treatments: 
-				print "A", t
-			if t in B.treatments: print "B", t
-			# AGGREGATE EFFECTS HERE
-			# COMPARE IF THEY ARE POSITIVE OR NEGATIVE
-			# AND IF THE GIVE THE CONFLICT A SCORE
-			# WE CAN USE TO DECIDE IF WE SHOULD ALERT
-			# ANYONE
-			
+	
+	# Simple aggregation of probabilities. It's here we must put or logic
+	print p.evaluate_conflicts(conflicting_effects)
 
 
 	#print "PLANS:", p.plans
@@ -140,7 +144,7 @@ if __name__ == '__main__':
 
 	#print p.get_conflicts(p.treatments["tegretol"], p.treatments["prednisone"], p.treatments["lisinopril"])
 
-	#print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if plan.has_effect("nausea")]
+	print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if "nausea" in plan.effects]
 	# print "###############"
 	#print p.effect_table["fight_seizures"]
 
