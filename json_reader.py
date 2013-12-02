@@ -16,7 +16,7 @@ class PlanSystem():
 
 	def load_plans(self, path):
 		""" 
-			Load a set of plans from the supplied path. Does not check for conflicts
+			Load a set of plans from the supplied path. Does not chbeck for conflicts
 		"""
 		plan_json = open(path)
 		self.raw_plans = json.load(plan_json)
@@ -125,7 +125,6 @@ if __name__ == '__main__':
 		print e, "is caused by"
 		for t in p.effect_table[e]:
 			if t in A.treatments: 
-				print t.effects[e]
 				print "A", t
 			if t in B.treatments: print "B", t
 			# AGGREGATE EFFECTS HERE
