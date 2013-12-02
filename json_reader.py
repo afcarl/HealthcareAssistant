@@ -100,28 +100,26 @@ class PlanSystem():
 
 		return new_better_list, new_worse_list, new_conf_list, new_neutral
 
-	def evaluate_conflicts(self, conflicting_effects):
+	def evaluate_conflicts(self, plans, conflicting_effects):
 		# CAN CHECK MORE THAN TWO PLANS
 		# USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
 		total_effects = {}
-		for e in conflicting_effects:
-			print e, "is caused by"
-			better, same, worse = 0, 0, 0
+		for plan in plans:
+			for e in conflicting_effects:
+				better, same, worse = 0, 0, 0
 
-			for t in p.effect_table[e]:
-				if t in A.treatments: print "A", t
-				if t in B.treatments: print "B", t
+				for t in p.effect_table[e]:
+					if t in plan.treatments: 
+						better += float(t.effects[e].better)
+						same += float(t.effects[e].same)
+						worse += float(t.effects[e].worse)
 
-
-				better += float(t.effects[e].better)
-				same += float(t.effects[e].same)
-				worse += float(t.effects[e].worse)
-			total_effects[e] = (better, same, worse)
-				# AGGREGATE EFFECTS HERE
-				# COMPARE IF THEY ARE POSITIVE OR NEGATIVE
-				# AND IF THE GIVE THE CONFLICT A SCORE
-				# WE CAN USE TO DECIDE IF WE SHOULD ALERT
-				# ANYONE
+				total_effects[e] = (better, same, worse)
+					# AGGREGATE EFFECTS HERE
+					# COMPARE IF THEY ARE POSITIVE OR NEGATIVE
+					# AND IF THE GIVE THE CONFLICT A SCORE
+					# WE CAN USE TO DECIDE IF WE SHOULD ALERT
+					# ANYONE
 		return total_effects
 
 
@@ -136,7 +134,7 @@ if __name__ == '__main__':
 	# THE FOLLOWING SHOULD BE EXTRACTED INTO A METHOD
 	
 	# Simple aggregation of probabilities. It's here we must put or logic
-	print p.evaluate_conflicts(conflicting_effects)
+	print p.evaluate_conflicts([A,B],conflicting_effects)
 
 
 	#print "PLANS:", p.plans
@@ -150,9 +148,3 @@ if __name__ == '__main__':
 
 
 	#print "INTERSECT", p.treatment_intersection(p.plans[0],p.plans[1])
-
-
-
-
-
-
