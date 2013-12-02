@@ -1,0 +1,36 @@
+def get_conflicts(LoT_affecting_1_effect):
+	pos_list = [(1, [LoT[0].name], LoT[0].pos)]
+	neg_list = [(1, [LoT[0].name], LoT[0].neg)]
+	conf_list = []
+	neutral = LoT[0].neu
+
+	for a in range len(LoT) - 1:
+		pos_list, neg_list, conf_list, neutral = expand(pos_list, neg_list, conf_list, neutral, LoT[a+1])
+
+	#figure out what to do with the lists and what to return
+	#IDEA: return conflicts as conflicts and neg as notices
+    #can also do viz based on output
+
+def expand(pos_list, neg_list, conf_list, neutral, T):
+	new_pos_list = []
+	new_neg_list = []
+	new_conf_list = []
+
+	for a in pos_list:
+		new_conf_list.append((a[0]-1, a[1]+T.name, a[2]*T.neg))
+		new_pos_list.append((a[0], a[1], a[2]*T.neu))
+		new_pos_list.append((a[0]+1, a[1]+T.name, a[2]*T.pos))
+
+	for a in neg_list:
+		new_neg_list.append((a[0]-1, a[1]+T.name, a[2]*T.neg))
+		new_neg_list.append((a[0], a[1], a[2]*T.neu))
+		new_conf_list.append((a[0]+1, a[1]+T.name, a[2]*T.pos))
+
+	for a in conf_list:
+		new_conf_list.append((a[0]-1, a[1]+T.name, a[2]*T.neg))
+		new_conf_list.append((a[0], a[1], a[2]*T.neu))
+		new_conf_list.append((a[0]+1, a[1]+T.name, a[2]*T.pos))
+
+	new_neutral = neutral * T.neu
+
+	return new_pos_list, new_neg_list, new_conf_list, new_neutral
