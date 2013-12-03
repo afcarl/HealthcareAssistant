@@ -43,15 +43,24 @@ class PlanSystem():
     '''
     THE LOGIC IS HERE
     '''
+    def generate_trees(self):
+        pc_list = self.generate_plan_conflicts()
+        for pc in pc_list:
+            for c in pc.conflicts:
+                bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
+                print c.body_function
+                print bl
+                print wl
+                print cl
+                print nl
 
-
-    def go_and_find_stuff(self):
+    def generate_plan_conflicts(self):
         plancombs = it.combinations(self.plans, 2)
         pc_list = []
         for a in plancombs:
             pc_list.append(self.find_conflicts(a[0], a[1]))
 
-        print pc_list
+        return pc_list
 
 
     def find_conflicts(self, plan_a, plan_b):
@@ -93,8 +102,8 @@ class PlanSystem():
 
     def treatment_intersection(self, plan_a, plan_b):
         """
-                Check if two plans use any of the same treatmetns
-            """
+            Check if two plans use any of the same treatmetns
+        """
         shared_treatments = set()
         for ea in plan_a.effects: # Effect A
             if ea in plan_b.effects:
@@ -102,43 +111,48 @@ class PlanSystem():
         return shared_treatments
 
 
-    def get_conflicts(self, E, *treatments):
-        print treatments
+    def get_conflicts(self, E, treatments):
         bl = [(1, [treatments[0].name], treatments[0].effects[E].better)] # better_list
+
         wl = [(1, [treatments[0].name], treatments[0].effects[E].worse)] # worse_list
+
         cl = [] #conflicts_list
         nl = treatments[0].effects[E].same #neutral_list
 
         for t in treatments[1:]:
-            bl, wl, cl, nl = self.expand(bl, wl, cl, nl, t)
+            bl, wl, cl, nl = self.expand(bl, wl, cl, nl, t, E)
 
         #figure out what to do with the lists and what to return
         #IDEA: return conflicts as conflicts and worse as notices
-        return bl
+        bl = [a for a in bl if a[2] != 0]
+        wl = [a for a in wl if a[2] != 0]
+        cl = [a for a in cl if a[2] != 0]
+        return bl, wl, cl, nl
 
     #can also do viz based on output
 
-    def expand(better_list, worse_list, conf_list, neutral, T, E):
+    def expand(self, better_list, worse_list, conf_list, neutral, T, E):
         # T treatment
         # E effect
         nbl = [] # new_better_list
         nwl = [] # new_worse_list
         ncl = [] # new_conflict_list
 
+
         for a in better_list:
-            ncl.append((a[0] - 1, a[1] + T.name, a[2] * T.effects[E].worse))
+            ncl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
             nbl.append((a[0], a[1], a[2] * T.effects[E].same))
-            nbl.append((a[0] + 1, a[1] + T.effects[E].name, a[2] * T.effects[E].better))
+            nbl.append((a[0] + 1, a[1] + [T.name], a[2] * T.effects[E].better))
 
         for a in worse_list:
-            nwl.append((a[0] - 1, a[1] + T.effects[E].name, a[2] * T.effects[E].worse))
+            nwl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
             nwl.append((a[0], a[1], a[2] * T.effects[E].same))
-            ncl.append((a[0] + 1, a[1] + T.effects[E].name, a[2] * T.effects[E].better))
+            ncl.append((a[0] + 1, a[1] + [T.name], a[2] * T.effects[E].better))
 
         for a in conf_list:
-            ncl.append((a[0] - 1, a[1] + T.effects[E].name, a[2] * T.effects[E].worse))
+            ncl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
             ncl.append((a[0], a[1], a[2] * T.effects[E].same))
-            ncl.append((a[0] + 1, a[1] + T.effects[E].name, a[2] * T.effects[E].better))
+            ncl.append((a[0] + 1, a[1] + [T.name], a[2] * T.effects[E].better))
 
         new_neutral = neutral * T.effects[E].same
 
@@ -174,14 +188,15 @@ if __name__ == '__main__':
     B = p.plans[0]
     A = p.plans[1]
 
-    p.go_and_find_stuff()
+    print p.effect_table
+    p.generate_trees()
 
     #conflicting_effects = p.find_conflicts(A, B)
 
     # THE FOLLOWING SHOULD BE EXTRACTED INTO A METHOD
 
     # Simple aggregation of probabilities. It's here we must put or logic
-    #print p.evaluate_conflicts([A, B], conflicting_effects)
+    #print p.evaluate_conflicts_with_probs([A, B], conflicting_effects)
 
 
     #print "PLANS:", p.plans

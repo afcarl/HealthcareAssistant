@@ -7,7 +7,7 @@ class Treatment():
         self.effects = {}
         for e in data["effects"]:
             p = data["effects"][e]
-            self.effects[e] = TreatmentEffect(e, p["worse"], p["better"], p["same"])
+            self.effects[e] = TreatmentEffect(p["worse"], p["better"], p["same"])
 
     def __str__(self):
         return self.name
@@ -17,11 +17,10 @@ class Treatment():
 
 
 class TreatmentEffect:
-    def __init__(self, name, worse, better, same):
-        self.name = name
-        self.worse = worse
-        self.better = better
-        self.same = same
+    def __init__(self, worse, better, same):
+        self.worse = float(worse)
+        self.better = float(better)
+        self.same = float(same)
 
 
 class Plan():
@@ -84,6 +83,7 @@ class Conflict():
         self.score = 0
         self.body_function = 0
         self.conflicting_treatments = treatments
+
 
 
 
