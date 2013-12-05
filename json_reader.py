@@ -18,7 +18,10 @@ class PlanSystem():
 
         self.load_treatments("data/real_treatments3.json")
         self.load_plans("data/real_plans.json")
+
         self.isnewplan()
+        self.pc_list = self.generate_plan_conflicts()
+        self.find_conflicting_effects()
 
     def load_plans(self, path):
         """
@@ -47,7 +50,6 @@ class PlanSystem():
                 if not value == 0:
                     self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
 
-        print self.interference_table
 
 
     def isnewplan(self):
@@ -63,8 +65,7 @@ class PlanSystem():
         """
         creates plan_conflicts between two plans and generates the conflict tree for them
         """
-        pc_list = self.generate_plan_conflicts()
-        for pc in pc_list:
+        for pc in self.pc_list:
             zero_conflicts = set()
             for c in pc.conflicts:
                 bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
@@ -83,7 +84,6 @@ class PlanSystem():
                     c.conflicting_treatments = treatments
                 #print c
             pc.conflicts = pc.conflicts - zero_conflicts
-        return pc_list
 
     def generate_plan_conflicts(self):
         """
@@ -203,9 +203,8 @@ if __name__ == '__main__':
     B = p.plans[0]
     A = p.plans[1]
 
-    print p.effect_table
-    conflicting_effects = p.find_conflicting_effects()
-    for each in conflicting_effects:
+    print p.interference_table
+    for each in p.pc_list:
         print each.conflicts
 
     #conflicting_effects = p.find_conflicts(A, B)
