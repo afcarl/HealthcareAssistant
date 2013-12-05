@@ -1,6 +1,15 @@
 {
   "erythromycin": {
     "name": "erythromycin",
+    "interference": {
+        "erythromycin": 0,
+        "dihydroergotamine": 0,
+        "prednisone": 0.5,
+        "lisinopril": 0,
+        "pulmicort": 0.5,
+        "tegretol": 1,
+        "aspirin": 0.5
+    },
     "effects": {
       "nausea": {
         "worse": "0.5",
@@ -36,6 +45,15 @@
   },
   "dihydroergotamine": {
     "name": "dihydroergotamine",
+    "interference": {
+        "erythromycin": 0,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
     "effects": {
       "headache": {
         "worse": 0.2,
@@ -76,6 +94,15 @@
   },
   "prednisone": {
     "name": "prednisone",
+    "interference": {
+        "erythromycin": 0.5,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0.5,
+        "aspirin": 0.5
+    },
     "effects": {
       "headache": {
         "worse": "0.5",
@@ -136,6 +163,15 @@
   },
   "lisinopril": {
     "name": "lisinopril",
+    "interference": {
+        "erythromycin": 0,
+        "dihydroergotamine": 0,
+        "prednisone": 0.5,
+        "lisinopril": 0,
+        "pulmicort": 0.5,
+        "tegretol": 0,
+        "aspirin": 0.5
+    },
     "effects": {
       "headache": {
         "worse": "0.2",
@@ -186,6 +222,15 @@
   },
   "pulmicort": {
     "name": "pulmicort",
+    "interference": {
+        "erythromycin": 0.5,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
     "effects": {
       "headache": {
         "worse": "0.2",
@@ -236,6 +281,15 @@
   },
   "tegretol": {
     "name": "tegretol",
+    "interference": {
+        "erythromycin": 1,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
     "effects": {
       "headache": {
         "worse": "0.2",
@@ -281,6 +335,15 @@
   },
   "aspirin": {
     "name": "aspirin",
+    "interference": {
+        "erythromycin": 0.5,
+        "dihydroergotamine": 0,
+        "prednisone": 0.5,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
     "effects": {
       "headache": {
         "worse": 0.05,
