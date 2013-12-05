@@ -1,6 +1,6 @@
 import json, os, time
 import itertools as it
-from models import Treatment, Plan, PlanConflict, Conflict
+from models import Treatment, Plan, PlanConflict, Conflict, Pair
 
 
 class PlanSystem():
@@ -41,11 +41,12 @@ class PlanSystem():
             self.treatments[rt] = t
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
-            for possible_interference, value in t.interference.iteritems():
-                #print type(value)
-                #self.interference_table.setdefault(value, set()).add(set([Treatment(possible_interference), t]))
-                pass
 
+        for name,object in self.treatments.iteritems():
+            for possible_interference, value in object.interference.iteritems():
+                self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
+
+        print self.interference_table
 
 
     def isnewplan(self):
