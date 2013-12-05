@@ -4,6 +4,7 @@ class Treatment():
     def __init__(self, data):
         """ Initialize a treatment from a dict object with the necessary attributes"""
         self.name = data["name"]
+        self.interference= data["interference"]
         self.effects = {}
         for e in data["effects"]:
             p = data["effects"][e]
