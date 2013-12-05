@@ -40,8 +40,6 @@ class PlanSystem():
             t = Treatment(raw_treatments[rt])
             print "t ", t
             self.treatments[rt] = t
-            print t.interference
-            print t.effects
             print "self.treatments ", self.treatments
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
