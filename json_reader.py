@@ -14,6 +14,7 @@ class PlanSystem():
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
         self.newplan = False
+        self.interference_table = {}
 
         self.load_treatments("data/real_treatments3.json")
         self.load_plans("data/real_plans.json")
@@ -36,13 +37,14 @@ class PlanSystem():
             raw_treatments = json.load(data)
 
         for rt in raw_treatments:
-            print "rt ", rt
             t = Treatment(raw_treatments[rt])
-            print "t ", t
             self.treatments[rt] = t
-            print "self.treatments ", self.treatments
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
+            for possible_interference, value in t.interference.iteritems():
+                #print type(value)
+                #self.interference_table.setdefault(value, set()).add(set([Treatment(possible_interference), t]))
+                pass
 
 
 
