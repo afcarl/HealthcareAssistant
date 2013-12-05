@@ -132,8 +132,6 @@ class PlanSystem():
         return treatments
 
 
-
-
     def treatment_intersection(self, plan_a, plan_b):
         """
             Check if two plans use any of the same treatments
@@ -207,6 +205,8 @@ if __name__ == '__main__':
     conflicting_effects = p.find_conflicting_effects()
     for each in conflicting_effects:
         print each.conflicts
+
+
 
     #conflicting_effects = p.find_conflicts(A, B)
 
