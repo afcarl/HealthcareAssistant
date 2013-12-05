@@ -47,12 +47,12 @@ class Vis_plan:
         rects1 = ax.barh(ind, posValues, height, color='g')
         rects2 = ax.barh(ind, negValues, height, color='r')
 
-        print negValues
         ax.set_ylabel('Affected Body function')
         ax.set_title('Results of the plans')
         ax.axis([min(negValues) -.1, max(posValues)+.1, min(ind), max(ind)])
         ax.set_yticks(ind+height)
         ax.set_yticklabels( labels )
+        ax.yaxis.label.set_size(20)
 
         plt.grid(True)
 
@@ -60,9 +60,6 @@ class Vis_plan:
 
 
 if __name__ == '__main__':
-    asd = set([1, 2])
-    fgh = set([2, 1])
-    print asd == fgh
     v = Vis_plan()
     B = v.p.plans[0]
     A = v.p.plans[1]
