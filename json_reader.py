@@ -44,7 +44,8 @@ class PlanSystem():
 
         for name,object in self.treatments.iteritems():
             for possible_interference, value in object.interference.iteritems():
-                self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
+                if not value == 0:
+                    self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
 
         print self.interference_table
 
