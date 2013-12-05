@@ -51,14 +51,18 @@ class PlanSystem():
 
 
     def isnewplan(self):
+        """
+        finds whether there is a new plan
+        """
         for plan in self.plans:
             if plan.status == "new":
                 self.newplan = plan
 
-    '''
-    THE LOGIC IS HERE
-    '''
+
     def find_conflicting_effects(self):
+        """
+        creates plan_conflicts between two plans and generates the conflict tree for them
+        """
         pc_list = self.generate_plan_conflicts()
         for pc in pc_list:
             zero_conflicts = set()
@@ -82,6 +86,9 @@ class PlanSystem():
         return pc_list
 
     def generate_plan_conflicts(self):
+        """
+        generates an empty plan_conflict for each pair of plans in a set of plans
+        """
         if not self.newplan:
             plancombs = it.combinations(self.plans, 2)
         else:
@@ -125,14 +132,11 @@ class PlanSystem():
         return treatments
 
 
-    '''
-    THE LOGIC ENDS HERE
-    '''
 
 
     def treatment_intersection(self, plan_a, plan_b):
         """
-            Check if two plans use any of the same treatmetns
+            Check if two plans use any of the same treatments
         """
         shared_treatments = set()
         for ea in plan_a.effects: # Effect A
@@ -142,8 +146,11 @@ class PlanSystem():
 
 
     def get_conflicts(self, E, treatments):
+        """
+        expands the whole probability tree and creates list with all conflicts, positive/negative effects and the
+        probability that nothing happens
+        """
         bl = [(1, [treatments[0].name], treatments[0].effects[E].better)] # better_list
-
         wl = [(1, [treatments[0].name], treatments[0].effects[E].worse)] # worse_list
 
         cl = [] #conflicts_list
@@ -152,18 +159,16 @@ class PlanSystem():
         for t in treatments[1:]:
             bl, wl, cl, nl = self.expand(bl, wl, cl, nl, t, E)
 
-        #figure out what to do with the lists and what to return
-        #IDEA: return conflicts as conflicts and worse as notices
         bl = [a for a in bl if a[2] != 0]
         wl = [a for a in wl if a[2] != 0]
         cl = [a for a in cl if a[2] != 0]
         return bl, wl, cl, nl
 
-    #can also do viz based on output
-
     def expand(self, better_list, worse_list, conf_list, neutral, T, E):
-        # T treatment
-        # E effect
+        # T treatment,  E effect
+        """
+        expands one level of the tree
+        """
         nbl = [] # new_better_list
         nwl = [] # new_worse_list
         ncl = [] # new_conflict_list
