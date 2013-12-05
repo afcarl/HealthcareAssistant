@@ -60,16 +60,18 @@ class PlanConflict():
         self.plan_a = plan_a
         self.plan_b = plan_b
         self.conflicts = set()
-
-
-    def check_for_conflicts(self):
-        pass
-
-    # A lot of looping
+        self.interferences = set()
 
     def __repr__(self):
         return "PC(" + str(self.plan_a) + ", " + str(self.plan_b) + ")"
 
+class Interference():
+    def __init__(self, treatments, score):
+        self.score = score
+        self.conflicting_treatments = treatments
+
+    def __repr__(self):
+        return "Inter(" + str(self.conflicting_treatments.a) + ", " + str(self.conflicting_treatments.b) + ", " + str(self.score) + ")"
 
 class Conflict():
     '''

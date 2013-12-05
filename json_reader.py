@@ -1,6 +1,6 @@
 import json, os, time
 import itertools as it
-from models import Treatment, Plan, PlanConflict, Conflict, Pair
+from models import *
 
 
 class PlanSystem():
@@ -22,6 +22,7 @@ class PlanSystem():
         self.isnewplan()
         self.pc_list = self.generate_plan_conflicts()
         self.find_conflicting_effects()
+        self.generate_interferences()
 
     def load_plans(self, path):
         """
@@ -49,6 +50,13 @@ class PlanSystem():
             for possible_interference, value in object.interference.iteritems():
                 if not value == 0:
                     self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
+
+        if '-1' not in self.interference_table.keys():
+            self.interference_table['-1'] = set()
+        if '1' not in self.interference_table.keys():
+            self.interference_table['-1'] = set()
+        if '0.5' not in self.interference_table.keys():
+            self.interference_table['-1'] = set()
 
 
 
@@ -131,9 +139,6 @@ class PlanSystem():
                     treatments.append(t)
         return treatments
 
-
-
-
     def treatment_intersection(self, plan_a, plan_b):
         """
             Check if two plans use any of the same treatments
@@ -192,6 +197,18 @@ class PlanSystem():
         new_neutral = neutral * T.effects[E].same
 
         return nbl, nwl, ncl, new_neutral
+
+    def generate_interferences(self):
+        for pc in self.pc_list:
+            for a in pc.plan_a.treatments:
+                for b in pc.plan_b.treatments:
+                    if Pair(a, b) in self.interference_table['1']:
+                        pc.interferences.add(Interference(Pair(a, b), 1))
+                    elif Pair(a, b) in self.interference_table['0.5']:
+                        pc.interferences.add(Interference(Pair(a, b), 0.5))
+                    elif Pair(a, b) in self.interference_table['-1']:
+                        pc.interferences.add(Interference(Pair(a, b), -1))
+
 
 
 
