@@ -31,6 +31,7 @@ class Plan():
         self.name = data["name"]
         self.treatments = []
         self.effects = {}
+        self.status = data["status"]
 
         for t in data["treatments"]:
             self.treatments.append(treatments[t])
@@ -81,6 +82,8 @@ class Conflict():
         self.body_function = 0
         self.conflicting_treatments = treatments
 
+    def __repr__(self):
+        return "Conf(" + str(self.body_function) + ", " + str(self.conflicting_treatments) + ", " + str(self.score) + ")"
 
 
 

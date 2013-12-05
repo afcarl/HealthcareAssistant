@@ -13,13 +13,15 @@ class PlanSystem():
         self.effect_table = {} # All treatments with a given effect
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
+        self.newplan = False
 
         self.load_treatments("data/real_treatments3.json")
         self.load_plans("data/real_plans.json")
+        self.isnewplan()
 
     def load_plans(self, path):
         """
-			Load a set of plans from the supplied path. Does not chbeck for conflicts
+			Load a set of plans from the supplied path. Does not check for conflicts
 		"""
         with  open(path, 'r') as data:
             raw_plans = json.load(data)
@@ -39,6 +41,10 @@ class PlanSystem():
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
 
+    def isnewplan(self):
+        for plan in self.plans:
+            if plan.status == "new":
+                self.newplan = plan
 
     '''
     THE LOGIC IS HERE
@@ -46,18 +52,36 @@ class PlanSystem():
     def generate_trees(self):
         pc_list = self.generate_plan_conflicts()
         for pc in pc_list:
+            zero_conflicts = set()
             for c in pc.conflicts:
                 bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
-                print c.body_function
-                print cl
+                #print c.body_function
+                #print cl
+                if cl == []:
+                    zero_conflicts.add(c)
+                else:
+                    treatments = []
+                    total_prob = 0
+                    for score, combo, prob in cl:
+                        if len(combo) > len(treatments):
+                            treatments = combo
+                        total_prob+= prob
+                    c.score = total_prob
+                    c.conflicting_treatments = treatments
+                #print c
+            pc.conflicts = pc.conflicts - zero_conflicts
+            print pc.conflicts
 
     def generate_plan_conflicts(self):
-        plancombs = it.combinations(self.plans, 2)
+        if not self.newplan:
+            plancombs = it.combinations(self.plans, 2)
+        else:
+            plancombs = [(plan, self.newplan) for plan in self.plans if not plan == self.newplan]
         pc_list = []
         for a in plancombs:
             pc_list.append(self.find_conflicts(a[0], a[1]))
-
         return pc_list
+
 
 
     def find_conflicts(self, plan_a, plan_b):
@@ -156,27 +180,7 @@ class PlanSystem():
         return nbl, nwl, ncl, new_neutral
 
 
-    def evaluate_conflicts_with_probs(self, plans, conflicting_effects):
-        # CAN CHECK MORE THAN TWO PLANS
-        # USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
-        total_effects = {}
-        for plan in plans:
-            for e in conflicting_effects:
-                better, same, worse = 0, 0, 0
 
-                for t in p.effect_table[e]:
-                    if t in plan.treatments:
-                        better += float(t.effects[e].better)
-                        same += float(t.effects[e].same)
-                        worse += float(t.effects[e].worse)
-
-                total_effects[e] = (better, same, worse)
-                # AGGREGATE EFFECTS HERE
-                # COMPARE IF THEY ARE POSITIVE OR NEGATIVE
-                # AND IF THE GIVE THE CONFLICT A SCORE
-                # WE CAN USE TO DECIDE IF WE SHOULD ALERT
-                # ANYONE
-        return total_effects
 
 
 if __name__ == '__main__':
