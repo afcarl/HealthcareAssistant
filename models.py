@@ -51,9 +51,6 @@ class Plan():
         return "PLAN(" + self.__str__() + ")"
 
 
-##################################################
-######### NOT IMPLEMENTED/USED YET ###############
-##################################################
 class PlanConflict():
     def __init__(self, plan_a, plan_b):
         self.plan_a = plan_a

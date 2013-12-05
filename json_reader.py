@@ -49,10 +49,7 @@ class PlanSystem():
             for c in pc.conflicts:
                 bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
                 print c.body_function
-                print bl
-                print wl
                 print cl
-                print nl
 
     def generate_plan_conflicts(self):
         plancombs = it.combinations(self.plans, 2)
