@@ -36,10 +36,17 @@ class PlanSystem():
             raw_treatments = json.load(data)
 
         for rt in raw_treatments:
+            print "rt ", rt
             t = Treatment(raw_treatments[rt])
+            print "t ", t
             self.treatments[rt] = t
+            print t.interference
+            print t.effects
+            print "self.treatments ", self.treatments
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
+
+
 
     def isnewplan(self):
         for plan in self.plans:
@@ -49,7 +56,7 @@ class PlanSystem():
     '''
     THE LOGIC IS HERE
     '''
-    def generate_trees(self):
+    def find_conflicting_effects(self):
         pc_list = self.generate_plan_conflicts()
         for pc in pc_list:
             zero_conflicts = set()
@@ -70,7 +77,7 @@ class PlanSystem():
                     c.conflicting_treatments = treatments
                 #print c
             pc.conflicts = pc.conflicts - zero_conflicts
-            print pc.conflicts
+        return pc_list
 
     def generate_plan_conflicts(self):
         if not self.newplan:
@@ -210,7 +217,9 @@ if __name__ == '__main__':
     A = p.plans[1]
 
     print p.effect_table
-    p.generate_trees()
+    conflicting_effects = p.find_conflicting_effects()
+    for each in conflicting_effects:
+        print each.conflicts
 
     #conflicting_effects = p.find_conflicts(A, B)
 
