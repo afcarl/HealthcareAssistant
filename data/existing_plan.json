@@ -1,0 +1,9 @@
+{
+	"Plan A": {
+		"name": "Plan A",
+		"description": "Stem cell therapy",
+		"doctor": 1,
+		"treatments": ["prednisone", "erythromycin"],
+		"status": "existing"
+	}
+}
