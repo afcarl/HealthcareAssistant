@@ -1,43 +1,49 @@
-from json_reader import PlanSystem
 import matplotlib.pyplot as plt
 import numpy as np
+from util import timer
 
-class Vis_plan:
+class ConflictVisualizer:
 
-    def __init__(self):
-        self.p = PlanSystem()
+    def __init__(self, plan_system):
+        self.plan_system = plan_system
 
+    @timer
     def evaluate_conflicts_with_probs(self, plans):
             # CAN CHECK MORE THAN TWO PLANS
-            # USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
             total_effects = {}
             conflicting_effects = set()
+
+            # TODO: this should be done in a smarter way
             for plan in plans:
-                conflicting_effects = conflicting_effects.union(plan.effectnames)
+                conflicting_effects = conflicting_effects.union(plan.effects)
+
             for plan in plans:
                 for e in conflicting_effects:
                     better, same, worse = 0, 0, 0
-
-                    for t in self.p.effect_table[e]:
-                        if t in plan.treatments:
+                    for t in plan.treatments: # this order is much faster 
+                        if t in self.plan_system.effect_table[e]:
                             better += float(t.effects[e].better)
                             same += float(t.effects[e].same)
                             worse += float(t.effects[e].worse)
-
                     total_effects[e] = (better, same, worse)
-                    # AGGREGATE EFFECTS HERE
-                    # COMPARE IF THEY ARE POSITIVE OR NEGATIVE
-                    # AND IF THE GIVE THE CONFLICT A SCORE
-                    # WE CAN USE TO DECIDE IF WE SHOULD ALERT
-                    # ANYONE
             return total_effects
 
-    def masterviz(self, plans):
+    def visualize(self, plans):
+        """
+            Calculate total probabilities of a set of plan in the plansystem,
+            and plot them using the plot function.
+        """
         values = self.evaluate_conflicts_with_probs(plans)
         posValues = [a[0] for i, a in values.iteritems()]
         negValues = [a[2]*-1 for i, a in values.iteritems()]
         labels = [i for i, a in values.iteritems()]
 
+        self.plot(posValues,negValues,labels)
+
+    def plot(self, posValues, negValues, labels):
+        """
+            Create the actual plot with the supplied values
+        """
         N = len(posValues)
         ind = np.arange(N)
         height = 0.5
@@ -59,9 +65,11 @@ class Vis_plan:
         plt.show()
 
 
-if __name__ == '__main__':
-    v = Vis_plan()
-    B = v.p.plans[0]
-    A = v.p.plans[1]
 
-    v.masterviz([A, B])
+if __name__ == '__main__':
+    from json_reader import PlanSystem
+    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+    v = ConflictVisualizer(p)
+    B = v.plan_system.plans[0]
+    A = v.plan_system.plans[1]
+    v.visualize([A, B])

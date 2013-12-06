@@ -1,29 +1,35 @@
 import json, os, time
 import itertools as it
 from models import *
-
+from util import timer
 
 class PlanSystem():
     """
 		The HealthcareAssistant system
 	"""
 
-    def __init__(self):
+    def __init__(self, treatments_path, plans_path=""):
 
         self.effect_table = {} # All treatments with a given effect
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
         self.newplan = False
-        self.interference_table = {}
+        self.interference_table = {'-1':set(), '0.5':set(), '1':set()} # MR: can only take these values?
 
-        self.load_treatments("data/real_treatments3.json")
-        self.load_plans("data/real_plans.json")
+        # Required
+        self.load_treatments(treatments_path)
+        # Optional, may start without plans
+        if plans_path: self.load_plans(plans_path)
 
-        self.isnewplan()
+        # Should add a method for loading plans
+        self.check_for_new_plans()
+
+        # Do calculations, move to a new method that is called when a new plan is added?
         self.pc_list = self.generate_plan_conflicts()
         self.find_conflicting_effects()
         self.generate_interferences()
 
+    @timer
     def load_plans(self, path):
         """
 			Load a set of plans from the supplied path. Does not check for conflicts
@@ -35,6 +41,7 @@ class PlanSystem():
             p = Plan(raw_plans[rp], self.treatments)
             self.plans.append(p)
 
+    @timer
     def load_treatments(self, path):
 
         with open(path, 'r') as data:
@@ -46,21 +53,12 @@ class PlanSystem():
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
 
-        for name,object in self.treatments.iteritems():
-            for possible_interference, value in object.interference.iteritems():
+        for name, treatment in self.treatments.iteritems():
+            for possible_interference, value in treatment.interference.iteritems():
                 if not value == 0:
-                    self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
+                    self.interference_table[str(value)].add(Pair(self.treatments[possible_interference], treatment))
 
-        if '-1' not in self.interference_table.keys():
-            self.interference_table['-1'] = set()
-        if '1' not in self.interference_table.keys():
-            self.interference_table['-1'] = set()
-        if '0.5' not in self.interference_table.keys():
-            self.interference_table['-1'] = set()
-
-
-
-    def isnewplan(self):
+    def check_for_new_plans(self):
         """
         finds whether there is a new plan
         """
@@ -68,7 +66,7 @@ class PlanSystem():
             if plan.status == "new":
                 self.newplan = plan
 
-
+    @timer
     def find_conflicting_effects(self):
         """
         creates plan_conflicts between two plans and generates the conflict tree for them
@@ -77,8 +75,6 @@ class PlanSystem():
             zero_conflicts = set()
             for c in pc.conflicts:
                 bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
-                #print c.body_function
-                #print cl
                 if cl == []:
                     zero_conflicts.add(c)
                 else:
@@ -93,6 +89,7 @@ class PlanSystem():
                 #print c
             pc.conflicts = pc.conflicts - zero_conflicts
 
+    @timer
     def generate_plan_conflicts(self):
         """
         generates an empty plan_conflict for each pair of plans in a set of plans
@@ -107,7 +104,7 @@ class PlanSystem():
         return pc_list
 
 
-
+    @timer
     def find_conflicts(self, plan_a, plan_b):
         """
             Return all body functions that are affected by both plans
@@ -128,7 +125,7 @@ class PlanSystem():
 
         return pc
 
-
+    @timer
     def evaluate_conflicts(self, plans, conflicting_effect):
     # CAN CHECK MORE THAN TWO PLANS
     # USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
@@ -149,7 +146,7 @@ class PlanSystem():
                 in_both = plan_a.effects[ea].intersection(plan_b.effects[ea])
         return shared_treatments
 
-
+    @timer
     def get_conflicts(self, E, treatments):
         """
         expands the whole probability tree and creates list with all conflicts, positive/negative effects and the
@@ -169,6 +166,7 @@ class PlanSystem():
         cl = [a for a in cl if a[2] != 0]
         return bl, wl, cl, nl
 
+    @timer
     def expand(self, better_list, worse_list, conf_list, neutral, T, E):
         # T treatment,  E effect
         """
@@ -198,6 +196,7 @@ class PlanSystem():
 
         return nbl, nwl, ncl, new_neutral
 
+    @timer
     def generate_interferences(self):
         for pc in self.pc_list:
             for a in pc.plan_a.treatments:
@@ -209,13 +208,8 @@ class PlanSystem():
                     elif Pair(a, b) in self.interference_table['-1']:
                         pc.interferences.add(Interference(Pair(a, b), -1))
 
-
-
-
-
-
 if __name__ == '__main__':
-    p = PlanSystem()
+    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
 
     B = p.plans[0]
     A = p.plans[1]
