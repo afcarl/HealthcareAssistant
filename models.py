@@ -33,6 +33,8 @@ class Plan():
         self.treatments = []
         self.effects = {}
         self.status = data["status"]
+        self.effectnames = set()
+        self.doctor = data["doctor"]
 
         for t in data["treatments"]:
             self.treatments.append(treatments[t])
@@ -72,13 +74,6 @@ class Interference():
         return "Inter(" + str(self.conflicting_treatments.a) + ", " + str(self.conflicting_treatments.b) + ", " + str(self.score) + ")"
 
 class Conflict():
-    '''
-	@classmethod
-	def build_conflict(cls, treatments):
-		c = Conflict()
-        c.conflicting_treatments = treatments
-        return c
-    '''
 
     def __init__(self, treatments):
         self.score = 0
@@ -91,7 +86,7 @@ class Conflict():
 '''
 Created on Oct 20, 2013
 
-@author: Ofra
+@author: Ofra and Martin
 '''
 
 class Pair(object):

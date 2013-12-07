@@ -13,7 +13,6 @@ class PlanSystem():
         self.effect_table = {} # All treatments with a given effect
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
-        self.newplan = False
         self.interference_table = {'-1':set(), '0.5':set(), '1':set()} # MR: can only take these values?
 
         # Required
@@ -57,6 +56,14 @@ class PlanSystem():
             for possible_interference, value in treatment.interference.iteritems():
                 if not value == 0:
                     self.interference_table[str(value)].add(Pair(self.treatments[possible_interference], treatment))
+                    self.interference_table.setdefault(str(value),set()).add(Pair(self.treatments[possible_interference], object))
+
+        if '-1' not in self.interference_table.keys():
+            self.interference_table['-1'] = set()
+        if '1' not in self.interference_table.keys():
+            self.interference_table['-1'] = set()
+        if '0.5' not in self.interference_table.keys():
+            self.interference_table['-1'] = set()
 
     def check_for_new_plans(self):
         """
@@ -103,14 +110,12 @@ class PlanSystem():
             pc_list.append(self.find_conflicts(a[0], a[1]))
         return pc_list
 
-
     @timer
     def find_conflicts(self, plan_a, plan_b):
         """
             Return all body functions that are affected by both plans
             Does not check if the same treatment in both plan causes it
         """
-
         pc = PlanConflict(plan_a, plan_b)
         conflicting_effects = set()
         for ea in plan_a.effects: # Effect A
@@ -208,15 +213,35 @@ class PlanSystem():
                     elif Pair(a, b) in self.interference_table['-1']:
                         pc.interferences.add(Interference(Pair(a, b), -1))
 
+    def generate_alerts(self, plan):
+        print "Alerts for Doctor", plan.doctor, ":"
+        for pc in self.pc_list:
+            if plan == pc.plan_a or plan == pc.plan_b:
+                for conf in pc.conflicts:
+                    if conf.score >= .1:
+                        print "   Treatments", ', '.join(str(a) for a in conf.conflicting_treatments), "cause", conf.body_function, "with a probability of", conf.score
+                for conf in pc.interferences:
+                    if conf.score == 1:
+                        print "   Treatments", conf.conflicting_treatments.a, "and", conf.conflicting_treatments.b, "have a dangerous interaction"
+        print "Warnings for Doctor", plan.doctor, ":"
+        for pc in self.pc_list:
+            if plan == pc.plan_a or plan == pc.plan_b:
+                for conf in pc.conflicts:
+                    if conf.score > .05 and conf.score < .1:
+                        print "   Treatments", ', '.join(str(a) for a in conf.conflicting_treatments), "cause", conf.body_function, "with a probability of", conf.score
+                for conf in pc.interferences:
+                    if conf.score == 1:
+                        print "   Treatments", conf.conflicting_treatments.a, "and", conf.conflicting_treatments.b, "have a slightly negative interaction"
+
+
 if __name__ == '__main__':
     p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
 
-    B = p.plans[0]
-    A = p.plans[1]
+    for plan in p.plans:
+        p.generate_alerts(plan)
 
-    print p.interference_table
-    for each in p.pc_list:
-        print each.conflicts
+    #B = p.plans[0]
+    #A = p.plans[1]
 
     #conflicting_effects = p.find_conflicts(A, B)
 
@@ -231,7 +256,7 @@ if __name__ == '__main__':
 
     #print p.get_conflicts(p.treatments["tegretol"], p.treatments["prednisone"], p.treatments["lisinopril"])
 
-    print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if "nausea" in plan.effects]
+    #print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if "nausea" in plan.effects]
     # print "###############"
     #print p.effect_table["fight_seizures"]
 
