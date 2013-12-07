@@ -4,7 +4,7 @@ class Treatment():
     def __init__(self, data):
         """ Initialize a treatment from a dict object with the necessary attributes"""
         self.name = data["name"]
-        self.interference= data["interference"]
+        self.interference = data["interference"]
         self.effects = {}
         for e in data["effects"]:
             p = data["effects"][e]
@@ -16,13 +16,11 @@ class Treatment():
     def __repr__(self):
         return "Treatment(" + self.__str__() + ")"
 
-
 class TreatmentEffect:
     def __init__(self, worse, better, same):
         self.worse = float(worse)
         self.better = float(better)
         self.same = float(same)
-
 
 class Plan():
     """ A class for representing caretaker plans """
@@ -32,7 +30,7 @@ class Plan():
         self.name = data["name"]
         self.treatments = []
         self.effects = {}
-        self.status = data["status"]
+        self.doctor = data["doctor"]
 
         for t in data["treatments"]:
             self.treatments.append(treatments[t])
@@ -69,16 +67,12 @@ class Interference():
         self.conflicting_treatments = treatments
 
     def __repr__(self):
-        return "Inter(" + str(self.conflicting_treatments.a) + ", " + str(self.conflicting_treatments.b) + ", " + str(self.score) + ")"
+        if type(self.conflicting_treatments) == frozenset:
+            return "Inter(" + str(list(self.conflicting_treatments)[0]) + ", " + str(list(self.conflicting_treatments)[1]) + ", " + str(self.score) + ")"
+        else:
+            return "Inter(" + str(self.conflicting_treatments.a) + ", " + str(self.conflicting_treatments.b) + ", " + str(self.score) + ")"
 
 class Conflict():
-    '''
-	@classmethod
-	def build_conflict(cls, treatments):
-		c = Conflict()
-        c.conflicting_treatments = treatments
-        return c
-    '''
 
     def __init__(self, treatments):
         self.score = 0
@@ -87,44 +81,3 @@ class Conflict():
 
     def __repr__(self):
         return "Conf(" + str(self.body_function) + ", " + str(self.conflicting_treatments) + ", " + str(self.score) + ")"
-
-'''
-Created on Oct 20, 2013
-
-@author: Ofra
-'''
-
-class Pair(object):
-    '''
-    A utility class to represent pairs (ordering of the objects in the pair does not matter). It is used to represent mutexes (for both actions and propositions)
-    '''
-
-
-    def __init__(self, a, b):
-        '''
-        Constructor
-        '''
-        self.a = a
-        self.b = b
-
-    def __eq__(self, other):
-        if (self.a == other.a) and (self.b == other.b):
-            return True
-        if (self.b == other.a) and (self.a == other.b):
-            return True
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __str__(self):
-        return str(self.a)+","+str(self.b)
-
-    def __repr__(self):
-        return "Pair("+ str(self) + ")"
-
-    def __hash__(self):
-        return hash((self.a,self.b))
-
-
-

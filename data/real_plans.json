@@ -3,14 +3,12 @@
 		"name": "Plan A",
 		"description": "Stem cell therapy",
 		"doctor": 1,
-		"treatments": ["prednisone", "erythromycin"],
-		"status": "existing"
+		"treatments": ["prednisone", "erythromycin"]
 	},
 	"Plan B": {
 		"name": "Plan B",
 		"description": "Seizures",
 		"doctor": 2,
-		"treatments": ["tegretol", "aspirin"],
-		"status": "new"
+		"treatments": ["tegretol", "aspirin"]
 	}
 }

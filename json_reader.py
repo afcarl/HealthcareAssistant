@@ -214,9 +214,10 @@ if __name__ == '__main__':
     B = p.plans[0]
     A = p.plans[1]
 
-    print p.interference_table
+    print "INteRFERENCE", p.interference_table
     for each in p.pc_list:
         print each.conflicts
+        print each.interferences
 
     #conflicting_effects = p.find_conflicts(A, B)
 

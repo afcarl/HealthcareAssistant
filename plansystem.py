@@ -22,11 +22,9 @@ class PlanSystem():
         # Optional, may start without plans
         # Initially loaded plans are assumed not to conflict
         # To calculate conflicts, load them one by one
-        if plans_path: self.load_plans(plans_path)
+        if plans_path: self.load_plans(plans_path, conflict_checking=True) # SET FALSE TO SKIP CONLFICT CHECKING
 
-        # ****** No initial checking any more. Only for added plans *********
-    
-    def load_plans(self, path):
+    def load_plans(self, path, conflict_checking=False):
         """
 			Load a set of plans from the supplied path. Does not check for conflicts
 		"""
@@ -37,16 +35,20 @@ class PlanSystem():
             p = Plan(raw_plans[rp], self.treatments)
             self.plans.append(p)
 
-        # all vs all. conflict checking
+        if conflict_checking:
+            pc = self.all_plan_conflicts() # potential conflicts
+            self.generate_interferences(pc) # in-place
+            
+            # alert
+            for plan in self.plans:
+                self.generate_alerts(plan, pc)
 
-    
     def load_treatments(self, path):
         """
             Builds a knowledge base of treatments and effects. 
             The system needs to know about all treatments in all plans that are
             submitted
         """
-
         with open(path, 'r') as data:
             raw_treatments = json.load(data)
 
@@ -55,6 +57,8 @@ class PlanSystem():
             self.treatments[rt] = t
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
+
+
         
     def build_interference_table(self):
         """
@@ -73,7 +77,6 @@ class PlanSystem():
 
         plan = Plan(raw_new_plan.values()[0], self.treatments)
         plan.status = "unconfirmed" # Let the user confirm that he wants to add the plan after the conflicts are displayed?
-
 
         # Check for conflicts here
         pc = self.generate_plan_conflicts(plan)
@@ -102,6 +105,12 @@ class PlanSystem():
             zero_conflicts = set()
             for c in pc.conflicts:
                 bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
+
+                print bl
+                print wl
+                print cl
+                print nl
+
                 if cl == []:
                     zero_conflicts.add(c)
                 else:
@@ -120,14 +129,23 @@ class PlanSystem():
         """
         generates an empty plan_conflict for each frozenset [of plans in a set of plans
         """
-
-
         plancombs = [(plan, new_plan) for plan in self.plans if not plan == new_plan]
         pc_list = []
         for a in plancombs:
             pc_list.append(self.find_conflicts(a[0], a[1]))
         return pc_list
 
+    def all_plan_conflicts(self):
+        """ 
+            Checks all plans in the system pairwise for conflicts.
+            Can be used for the systems inital load
+        """
+        plancombs = it.combinations(self.plans, 2)
+        print list(plancombs)
+        pc_list = []
+        for a in plancombs:
+            pc_list.append(self.find_conflicts(a[0], a[1]))
+        return pc_list
 
     
     def find_conflicts(self, plan_a, plan_b):
@@ -231,45 +249,64 @@ class PlanSystem():
                     elif frozenset([a, b]) in self.interference_table['-1']:
                         pc.interferences.add(Interference(frozenset([a, b]), -1))
 
+    def generate_alerts(self, plan, pc_list):
+        alerts = []
+        warnings = []
+
+        for pc in pc_list:
+            if plan == pc.plan_a or plan == pc.plan_b:
+                for conf in pc.conflicts:
+                    if conf.score >= 0.1:
+                        message = "Treatments " + ', '.join(str(a) for a in conf.conflicting_treatments) + " cause " + conf.body_function + " with a probability of " + str(conf.score)
+                        alerts.append(message)
+                    elif 0.05 < conf.score < 0.1:
+                        message = "Treatments " + ', '.join(str(a) for a in conf.conflicting_treatments) + " cause " + conf.body_function + " with a probability of " + str(conf.score)
+                        warnings.append(message)
+
+                for conf in pc.interferences:
+                    interaction = list(conf.conflicting_treatments)
+                    if conf.score == 1:
+                        message = " Treatments " + str(interaction[0]) + " and " + str(interaction[1]) + "have a dangerous interaction"
+                        alerts.append(message)
+                    elif conf.score == 0.5:
+                        message = " Treatments " + str(interaction[0]) + " and " + str(interaction[1]) + "have a slightly negative interaction"
+                        warnings.append(message)
+
+        print "Alerts for Doctor", plan.doctor, ":"
+        for alert in alerts:
+            print alert
+
+        print "Warnings for Doctor", plan.doctor, ":"
+        for warning in warnings:
+            print warning
+
 if __name__ == '__main__':
 
-    p = PlanSystem("data/real_treatments3.json", "")
-    conflicts_1 = p.add_plan("data/existing_plan.json")
-    conflicts_2 = p.add_plan("data/new_plan.json")
+    p_a_first = PlanSystem("data/real_treatments3.json")
+    p_b_first = PlanSystem("data/real_treatments3.json")
+
+    p = PlanSystem("data/real_treatments3.json")
+
+    conflicts_a1 = p_a_first.add_plan("data/existing_plan.json")
+    conflicts_a2 = p_a_first.add_plan("data/new_plan.json")
+
+    conflicts_b1 = p_b_first.add_plan("data/new_plan.json")
+    conflicts_b2 = p_b_first.add_plan("data/existing_plan.json")
 
     # Use the treatment intersection to check if two plans are almost similar?
     # Or say that names must be unique?
-    conflicts_3 = p.add_plan("data/new_plan.json")
+    # conflicts_3 = p.add_plan("data/new_plan.json")
 
-    print p.plans
-    p.print_conflicts(conflicts_1)
-    p.print_conflicts(conflicts_2)
-    p.print_conflicts(conflicts_3)
+    #print conflicts_2
+    #p.print_conflicts(conflicts_1)
+    #p.print_conflicts(conflicts_2)
+    #p.print_conflicts(conflicts_3)
 
+    print "--------------------------------------------------------------------"
 
-    #B = p.plans[0]
-    #A = p.plans[1]
-
-    # print p.interference_table
-    # for each in p.pc_list:
-    #     print each.conflicts
-
-    #conflicting_effects = p.find_conflicts(A, B)
-
-    # THE FOLLOWING SHOULD BE EXTRACTED INTO A METHOD
-
-    # Simple aggregation of probabilities. It's here we must put or logic
-    #print p.evaluate_conflicts_with_probs([A, B], conflicting_effects)
+    print "A FIRST"
+    p_a_first.generate_alerts(p_a_first.plans[0], conflicts_a2)
+    print "B FIRST"
+    p_b_first.generate_alerts(p_b_first.plans[0], conflicts_b2)
 
 
-    #print "PLANS:", p.plans
-    #print "TREATMENTS:", p.treatments
-
-    #print p.get_conflicts(p.treatments["tegretol"], p.treatments["prednisone"], p.treatments["lisinopril"])
-
-    #print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if "nausea" in plan.effects]
-    # print "###############"
-    #print p.effect_table["fight_seizures"]
-
-
-    #print "INTERSECT", p.treatment_intersection(p.plans[0],p.plans[1])

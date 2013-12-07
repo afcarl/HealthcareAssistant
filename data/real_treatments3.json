@@ -2,7 +2,7 @@
   "erythromycin": {
     "name": "erythromycin",
     "interference": {
-        "erythromycin": 0,
+        "erythromycin": 0, 
         "dihydroergotamine": 0,
         "prednisone": 0.5,
         "lisinopril": 0,

@@ -61,13 +61,10 @@ class ConflictVisualizer:
         ax.yaxis.label.set_size(20)
 
         plt.grid(True)
-
         plt.show()
 
-
-
 if __name__ == '__main__':
-    from json_reader import PlanSystem
+    from plansystem import PlanSystem
     p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
     v = ConflictVisualizer(p)
     B = v.plan_system.plans[0]
