@@ -13,22 +13,18 @@ class PlanSystem():
         self.effect_table = {} # All treatments with a given effect
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
-        self.newplan = False
         self.interference_table = {'-1':set(), '0.5':set(), '1':set()} # MR: can only take these values?
 
         # Required
         self.load_treatments(treatments_path)
+        # Build athe interference table. Should be  moved to its own method
+        self.build_interference_table()
         # Optional, may start without plans
+        # Initially loaded plans are assumed not to conflict
+        # To calculate conflicts, load them one by one
         if plans_path: self.load_plans(plans_path)
 
-        # Should add a method for loading plans
-        self.check_for_new_plans()
-
-        # Do calculations, move to a new method that is called when a new plan is added?
-        self.pc_list = self.generate_plan_conflicts()
-        self.find_conflicting_effects()
-        self.generate_interferences()
-
+        # ****** No initial checking any more. Only for added plans *********
     
     def load_plans(self, path):
         """
@@ -41,8 +37,15 @@ class PlanSystem():
             p = Plan(raw_plans[rp], self.treatments)
             self.plans.append(p)
 
+        # all vs all. conflict checking
+
     
     def load_treatments(self, path):
+        """
+            Builds a knowledge base of treatments and effects. 
+            The system needs to know about all treatments in all plans that are
+            submitted
+        """
 
         with open(path, 'r') as data:
             raw_treatments = json.load(data)
@@ -52,32 +55,30 @@ class PlanSystem():
             self.treatments[rt] = t
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
-
-        for name, treatment in self.treatments.iteritems():
+        
+    def build_interference_table(self):
+        """
+            Build an interference table from all known treatments. 
+            Can only be done after all treatments are loaded.
+        """
+        for treatment in self.treatments.values():
             for possible_interference, value in treatment.interference.iteritems():
-                if not value == 0:
-                    self.interference_table[str(value)].add(Pair(self.treatments[possible_interference], treatment))
+                if value: # not zero
+                    self.interference_table[str(value)].add(frozenset([self.treatments[possible_interference], treatment]))
 
-    def check_for_new_plans(self):
-        """
-        finds whether there is a new plan
-        """
-        for plan in self.plans:
-            if plan.status == "new":
-                self.newplan = plan
 
     def add_plan(self, path):
         with open(path, 'r') as data:
             raw_new_plan = json.load(data)
 
         plan = Plan(raw_new_plan.values()[0], self.treatments)
-        plan.status = "new"
+        plan.status = "unconfirmed" # Let the user confirm that he wants to add the plan after the conflicts are displayed?
 
 
         # Check for conflicts here
-        pc = self.generate_plan_conflicts2(plan)
-        self.find_conflicting_effects2(pc) # in-place
-        self.generate_interferences2(pc)
+        pc = self.generate_plan_conflicts(plan)
+        self.find_conflicting_effects(pc) # in-place
+        self.generate_interferences(pc)
 
         # Do this only if some test passes?
         self.plans.append(plan)
@@ -92,31 +93,7 @@ class PlanSystem():
             print plc.interferences
             print "***************"
 
-
-    
-    def find_conflicting_effects(self):
-        """
-        creates plan_conflicts between two plans and generates the conflict tree for them
-        """
-        for pc in self.pc_list:
-            zero_conflicts = set()
-            for c in pc.conflicts:
-                bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
-                if cl == []:
-                    zero_conflicts.add(c)
-                else:
-                    treatments = []
-                    total_prob = 0
-                    for score, combo, prob in cl:
-                        if len(combo) > len(treatments):
-                            treatments = combo
-                        total_prob+= prob
-                    c.score = total_prob
-                    c.conflicting_treatments = treatments
-                #print c
-            pc.conflicts = pc.conflicts - zero_conflicts
-
-    def find_conflicting_effects2(self, pc_list):
+    def find_conflicting_effects(self, pc_list):
         """
         creates plan_conflicts between two plans and generates the conflict tree for them. 
         Modifies pc_list in-place for now.
@@ -139,25 +116,11 @@ class PlanSystem():
                 #print c
             pc.conflicts = pc.conflicts - zero_conflicts
 
+    def generate_plan_conflicts(self, new_plan=None):
+        """
+        generates an empty plan_conflict for each frozenset [of plans in a set of plans
+        """
 
-    
-    def generate_plan_conflicts(self):
-        """
-        generates an empty plan_conflict for each pair of plans in a set of plans
-        """
-        if not self.newplan:
-            plancombs = it.combinations(self.plans, 2)
-        else:
-            plancombs = [(plan, self.newplan) for plan in self.plans if not plan == self.newplan]
-        pc_list = []
-        for a in plancombs:
-            pc_list.append(self.find_conflicts(a[0], a[1]))
-        return pc_list
-
-    def generate_plan_conflicts2(self, new_plan):
-        """
-        generates an empty plan_conflict for each pair of plans in a set of plans
-        """
 
         plancombs = [(plan, new_plan) for plan in self.plans if not plan == new_plan]
         pc_list = []
@@ -177,7 +140,7 @@ class PlanSystem():
         conflicting_effects = set()
         for ea in plan_a.effects: # Effect A
             if ea in plan_b.effects:
-                conflicting_effects.add(ea)
+                conflicting_effects.add (ea)
 
         for ce in conflicting_effects:
             confl_treatments = self.evaluate_conflicts([plan_a, plan_b], ce)
@@ -238,7 +201,6 @@ class PlanSystem():
         nwl = [] # new_worse_list
         ncl = [] # new_conflict_list
 
-
         for a in better_list:
             ncl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
             nbl.append((a[0], a[1], a[2] * T.effects[E].same))
@@ -258,28 +220,16 @@ class PlanSystem():
 
         return nbl, nwl, ncl, new_neutral
 
-    
-    def generate_interferences(self):
-        for pc in self.pc_list:
-            for a in pc.plan_a.treatments:
-                for b in pc.plan_b.treatments:
-                    if Pair(a, b) in self.interference_table['1']:
-                        pc.interferences.add(Interference(Pair(a, b), 1))
-                    elif Pair(a, b) in self.interference_table['0.5']:
-                        pc.interferences.add(Interference(Pair(a, b), 0.5))
-                    elif Pair(a, b) in self.interference_table['-1']:
-                        pc.interferences.add(Interference(Pair(a, b), -1))
-
-    def generate_interferences2(self, pc_list):
+    def generate_interferences(self, pc_list):
         for pc in pc_list:
             for a in pc.plan_a.treatments:
                 for b in pc.plan_b.treatments:
-                    if Pair(a, b) in self.interference_table['1']:
-                        pc.interferences.add(Interference(Pair(a, b), 1))
-                    elif Pair(a, b) in self.interference_table['0.5']:
-                        pc.interferences.add(Interference(Pair(a, b), 0.5))
-                    elif Pair(a, b) in self.interference_table['-1']:
-                        pc.interferences.add(Interference(Pair(a, b), -1))
+                    if frozenset([a, b]) in self.interference_table['1']:
+                        pc.interferences.add(Interference(frozenset([a, b]), 1))
+                    elif frozenset([a, b]) in self.interference_table['0.5']:
+                        pc.interferences.add(Interference(frozenset([a, b]), 0.5))
+                    elif frozenset([a, b]) in self.interference_table['-1']:
+                        pc.interferences.add(Interference(frozenset([a, b]), -1))
 
 if __name__ == '__main__':
 
@@ -295,9 +245,6 @@ if __name__ == '__main__':
     p.print_conflicts(conflicts_1)
     p.print_conflicts(conflicts_2)
     p.print_conflicts(conflicts_3)
-
-
-
 
 
     #B = p.plans[0]
