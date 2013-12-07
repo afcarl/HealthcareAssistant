@@ -29,7 +29,7 @@ class PlanSystem():
         self.find_conflicting_effects()
         self.generate_interferences()
 
-    @timer
+    
     def load_plans(self, path):
         """
 			Load a set of plans from the supplied path. Does not check for conflicts
@@ -41,7 +41,7 @@ class PlanSystem():
             p = Plan(raw_plans[rp], self.treatments)
             self.plans.append(p)
 
-    @timer
+    
     def load_treatments(self, path):
 
         with open(path, 'r') as data:
@@ -66,7 +66,34 @@ class PlanSystem():
             if plan.status == "new":
                 self.newplan = plan
 
-    @timer
+    def add_plan(self, path):
+        with open(path, 'r') as data:
+            raw_new_plan = json.load(data)
+
+        plan = Plan(raw_new_plan.values()[0], self.treatments)
+        plan.status = "new"
+
+
+        # Check for conflicts here
+        pc = self.generate_plan_conflicts2(plan)
+        self.find_conflicting_effects2(pc) # in-place
+        self.generate_interferences2(pc)
+
+        # Do this only if some test passes?
+        self.plans.append(plan)
+
+        return pc
+
+    def print_conflicts(self, pc):
+        for plc in pc:
+            print "***************"
+            print plc
+            print plc.conflicts
+            print plc.interferences
+            print "***************"
+
+
+    
     def find_conflicting_effects(self):
         """
         creates plan_conflicts between two plans and generates the conflict tree for them
@@ -89,7 +116,31 @@ class PlanSystem():
                 #print c
             pc.conflicts = pc.conflicts - zero_conflicts
 
-    @timer
+    def find_conflicting_effects2(self, pc_list):
+        """
+        creates plan_conflicts between two plans and generates the conflict tree for them. 
+        Modifies pc_list in-place for now.
+        """
+        for pc in pc_list:
+            zero_conflicts = set()
+            for c in pc.conflicts:
+                bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
+                if cl == []:
+                    zero_conflicts.add(c)
+                else:
+                    treatments = []
+                    total_prob = 0
+                    for score, combo, prob in cl:
+                        if len(combo) > len(treatments):
+                            treatments = combo
+                        total_prob+= prob
+                    c.score = total_prob
+                    c.conflicting_treatments = treatments
+                #print c
+            pc.conflicts = pc.conflicts - zero_conflicts
+
+
+    
     def generate_plan_conflicts(self):
         """
         generates an empty plan_conflict for each pair of plans in a set of plans
@@ -103,8 +154,19 @@ class PlanSystem():
             pc_list.append(self.find_conflicts(a[0], a[1]))
         return pc_list
 
+    def generate_plan_conflicts2(self, new_plan):
+        """
+        generates an empty plan_conflict for each pair of plans in a set of plans
+        """
 
-    @timer
+        plancombs = [(plan, new_plan) for plan in self.plans if not plan == new_plan]
+        pc_list = []
+        for a in plancombs:
+            pc_list.append(self.find_conflicts(a[0], a[1]))
+        return pc_list
+
+
+    
     def find_conflicts(self, plan_a, plan_b):
         """
             Return all body functions that are affected by both plans
@@ -125,7 +187,7 @@ class PlanSystem():
 
         return pc
 
-    @timer
+    
     def evaluate_conflicts(self, plans, conflicting_effect):
     # CAN CHECK MORE THAN TWO PLANS
     # USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
@@ -146,7 +208,7 @@ class PlanSystem():
                 in_both = plan_a.effects[ea].intersection(plan_b.effects[ea])
         return shared_treatments
 
-    @timer
+    
     def get_conflicts(self, E, treatments):
         """
         expands the whole probability tree and creates list with all conflicts, positive/negative effects and the
@@ -166,7 +228,7 @@ class PlanSystem():
         cl = [a for a in cl if a[2] != 0]
         return bl, wl, cl, nl
 
-    @timer
+    
     def expand(self, better_list, worse_list, conf_list, neutral, T, E):
         # T treatment,  E effect
         """
@@ -196,7 +258,7 @@ class PlanSystem():
 
         return nbl, nwl, ncl, new_neutral
 
-    @timer
+    
     def generate_interferences(self):
         for pc in self.pc_list:
             for a in pc.plan_a.treatments:
@@ -208,15 +270,42 @@ class PlanSystem():
                     elif Pair(a, b) in self.interference_table['-1']:
                         pc.interferences.add(Interference(Pair(a, b), -1))
 
+    def generate_interferences2(self, pc_list):
+        for pc in pc_list:
+            for a in pc.plan_a.treatments:
+                for b in pc.plan_b.treatments:
+                    if Pair(a, b) in self.interference_table['1']:
+                        pc.interferences.add(Interference(Pair(a, b), 1))
+                    elif Pair(a, b) in self.interference_table['0.5']:
+                        pc.interferences.add(Interference(Pair(a, b), 0.5))
+                    elif Pair(a, b) in self.interference_table['-1']:
+                        pc.interferences.add(Interference(Pair(a, b), -1))
+
 if __name__ == '__main__':
-    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
 
-    B = p.plans[0]
-    A = p.plans[1]
+    p = PlanSystem("data/real_treatments3.json", "")
+    conflicts_1 = p.add_plan("data/existing_plan.json")
+    conflicts_2 = p.add_plan("data/new_plan.json")
 
-    print p.interference_table
-    for each in p.pc_list:
-        print each.conflicts
+    # Use the treatment intersection to check if two plans are almost similar?
+    # Or say that names must be unique?
+    conflicts_3 = p.add_plan("data/new_plan.json")
+
+    print p.plans
+    p.print_conflicts(conflicts_1)
+    p.print_conflicts(conflicts_2)
+    p.print_conflicts(conflicts_3)
+
+
+
+
+
+    #B = p.plans[0]
+    #A = p.plans[1]
+
+    # print p.interference_table
+    # for each in p.pc_list:
+    #     print each.conflicts
 
     #conflicting_effects = p.find_conflicts(A, B)
 
@@ -231,7 +320,7 @@ if __name__ == '__main__':
 
     #print p.get_conflicts(p.treatments["tegretol"], p.treatments["prednisone"], p.treatments["lisinopril"])
 
-    print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if "nausea" in plan.effects]
+    #print "PLANS WITH NAUSEA EFFECT", [plan for plan in p.plans if "nausea" in plan.effects]
     # print "###############"
     #print p.effect_table["fight_seizures"]
 

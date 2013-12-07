@@ -33,7 +33,6 @@ class Plan():
         self.treatments = []
         self.effects = {}
         self.status = data["status"]
-        self.effectnames = set()
 
         for t in data["treatments"]:
             self.treatments.append(treatments[t])
@@ -45,7 +44,6 @@ class Plan():
         # Reset effects
         for t in self.treatments:
             for effect_name in t.effects:
-                self.effectnames.add(effect_name)
                 self.effects.setdefault(effect_name, set()).add(t)
 
     def __str__(self):
