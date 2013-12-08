@@ -7,36 +7,38 @@ class ConflictVisualizer:
     def __init__(self, plan_system):
         self.plan_system = plan_system
 
-    @timer
-    def evaluate_conflicts_with_probs(self, plans):
-            # CAN CHECK MORE THAN TWO PLANS
-            total_effects = {}
-            conflicting_effects = set()
+    def evaluate_conflicts_with_probs(self, plans): #FIXED - one bug was here
+        # CAN CHECK MORE THAN TWO PLANS
+        total_effects = {}
+        all_effects = set()
 
-            # TODO: this should be done in a smarter way
-            for plan in plans:
-                conflicting_effects = conflicting_effects.union(plan.effects)
+        for plan in plans:
+            all_effects = all_effects.union(plan.effects)
 
+        for e in all_effects:
+            better, same, worse = 0, 0, 0
             for plan in plans:
-                for e in conflicting_effects:
-                    better, same, worse = 0, 0, 0
-                    for t in plan.treatments: # this order is much faster 
-                        if t in self.plan_system.effect_table[e]:
-                            better += float(t.effects[e].better)
-                            same += float(t.effects[e].same)
-                            worse += float(t.effects[e].worse)
-                    total_effects[e] = (better, same, worse)
-            return total_effects
+                for t in plan.treatments:
+                    if t in self.plan_system.effect_table[e]:
+                        better += float(t.effects[e].better)
+                        same += float(t.effects[e].same)
+                        worse += float(t.effects[e].worse)
+
+            total_effects[e] = (better, same, worse)
+        return total_effects
 
     def visualize(self, plans):
         """
             Calculate total probabilities of a set of plan in the plansystem,
             and plot them using the plot function.
         """
-        values = self.evaluate_conflicts_with_probs(plans)
-        posValues = [a[0] for i, a in values.iteritems()]
-        negValues = [a[2]*-1 for i, a in values.iteritems()]
-        labels = [i for i, a in values.iteritems()]
+        total_effects = self.evaluate_conflicts_with_probs(plans)
+
+        posValues, negValues, labels = [], [], []
+        for key, value in total_effects.iteritems():
+            posValues.append(value[0])
+            negValues.append(-value[2])
+            labels.append(key) 
 
         self.plot(posValues,negValues,labels)
 
@@ -65,8 +67,9 @@ class ConflictVisualizer:
 
 if __name__ == '__main__':
     from plansystem import PlanSystem
-    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+    p = PlanSystem("data/real_treatments3.json", "data/existing_plan.json")
+    p.add_plan("data/new_plan.json")
     v = ConflictVisualizer(p)
     B = v.plan_system.plans[0]
     A = v.plan_system.plans[1]
-    v.visualize([A, B])
+    v.visualize([B])

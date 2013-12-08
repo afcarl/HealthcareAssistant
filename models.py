@@ -22,6 +22,10 @@ class TreatmentEffect:
         self.better = float(better)
         self.same = float(same)
 
+
+    def __repr__(self):
+        return "TRE(" + str(self.worse) + " " + str(self.better) + " " + str(self.same) + ")"
+
 class Plan():
     """ A class for representing caretaker plans """
 
@@ -49,7 +53,6 @@ class Plan():
 
     def __repr__(self):
         return "PLAN(" + self.__str__() + ")"
-
 
 class PlanConflict():
     def __init__(self, plan_a, plan_b):
