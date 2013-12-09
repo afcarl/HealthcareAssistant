@@ -2,6 +2,7 @@ import json, os, time
 import itertools as it
 from models import *
 from util import timer
+import argparse
 
 class PlanSystem():
     """
@@ -13,6 +14,7 @@ class PlanSystem():
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
         self.interference_table = {'-1':set(), '0.5':set(), '1':set()} # MR: can only take these values?
+        self.messages = [] # empty queue, print at certain times
 
         # Required
         self.load_treatments(treatments_path)
@@ -74,12 +76,24 @@ class PlanSystem():
         new_plan = Plan(raw_new_plan.values()[0], self.treatments)
         # new_plan.status = "unconfirmed" # Let the user confirm that he wants to add the plan after the conflicts are displayed?
 
+        intersection = {}
+        for plan in self.plans:
+            i = self.treatment_intersection(plan, new_plan)
+            intersection[plan] = i
+        if intersection:
+            for i in intersection:
+                self.messages.append("The treatment(s)" + str(intersection[i]) + "is already in plan" + str(i))
+
         # Check for conflicts here
         pc = self.generate_plan_conflicts(new_plan)
         self.find_conflicting_effects(pc) # in-place
         self.generate_interferences(pc)
 
         # Do this only if the user choose to continue after the alerts?
+        # So print all messages here, then let the user type (y/n) to add the plan to the system
+        #confirm = raw_input("Do you still want to add " + str(new_plan) + " to the system?")
+        #if confirm.lower() == "y": 
+        #    print "Plan added"
         self.plans.append(new_plan)
         # in that case, the order must be changed :)
         return pc
@@ -88,8 +102,10 @@ class PlanSystem():
         for plc in pc:
             print "***************"
             print plc
-            print plc.conflicts
-            print plc.interferences
+            for c in sorted(plc.conflicts, key=lambda x: x.body_function):
+                if c.score:
+                    print c.body_function, "#treatments:", c.conflicting_treatments, "score:", c.score
+            #print plc.interferences
             print "***************"
 
     def find_conflicting_effects(self, pc_list):
@@ -97,27 +113,11 @@ class PlanSystem():
         creates plan_conflicts between two plans and generates the conflict tree for them. 
         Modifies pc_list in-place for now.
         """
-        
-        # The error is withing this method (with calls)
-
-        for pc in pc_list:
+        for pc in pc_list: # Just one plan conflict when we have one plan and add one plan
             zero_conflicts = set()
-            for c in pc.conflicts:
-                bl, wl, cl, nl = self.get_conflicts(c.body_function, c.conflicting_treatments)
-                if cl == []:
-                    zero_conflicts.add(c)
-                else:
-                    treatments = []
-                    total_prob = 0
-                    for score, combo, prob in cl:
-                        if len(combo) > len(treatments):
-                            treatments = combo
-                        total_prob+= prob
-                    c.score = total_prob
-                    c.conflicting_treatments = treatments
-                #print c
-            pc.conflicts = pc.conflicts - zero_conflicts
-
+            for c in pc.conflicts: # Does not help to sort this
+                conflict_probability = self.get_conflicts(c.body_function, c.conflicting_treatments)
+                c.score = conflict_probability
 
     def generate_plan_conflicts(self, new_plan):
         """
@@ -127,8 +127,6 @@ class PlanSystem():
         pc_list = []
         for a in plancombs:
             pc_list.append(self.find_conflicts(a[0], a[1]))
-
-        print "GENERATED PC", new_plan, pc_list
 
         return pc_list
 
@@ -166,7 +164,6 @@ class PlanSystem():
 
     def evaluate_conflicts(self, plans, conflicting_effect):
         # CAN CHECK MORE THAN TWO PLANS
-        # USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
         treatments = []
         for plan in plans:
             for t in plan.treatments:
@@ -178,86 +175,66 @@ class PlanSystem():
         """
             Check if two plans use any of the same treatments
         """
-        shared_treatments = set()
-        for ea in plan_a.effects: # Effect A
-            if ea in plan_b.effects:
-                in_both = plan_a.effects[ea].intersection(plan_b.effects[ea])
-        return shared_treatments
+        shared = set()
+        for t in plan_a.treatments: # Effect A
+            if t in plan_b.treatments:
+                shared.add(t)
+        return shared
     
-    def get_conflicts(self, E, treatments):
+    def get_conflicts(self, E, treatments, better=0, same=1, worse=0, conf=0, recursive_call=False):
         """
         expands the whole probability tree and creates list with all conflicts, positive/negative effects and the
         probability that nothing happens
         """
-        bl = [(1, [treatments[0].name], treatments[0].effects[E].better)] # better_list
-        wl = [(1, [treatments[0].name], treatments[0].effects[E].worse)] # worse_list
+        if not recursive_call:
+            e = treatments[0].effects[E]
+            better = e.better
+            same = e.same
+            worse = e.worse
+            conf = 0
+            treatments = treatments[1:]
 
-        cl = [] #conflicts_list
-        nl = treatments[0].effects[E].same #neutral_list
+        if not treatments:
+            return conf
 
-      
+        t = treatments[0]
+        e = t.effects[E]
 
-        for t in treatments[1:]:
-            bl, wl, cl, nl = self.expand(bl, wl, cl, nl, t, E)
+        nbetter = better*(e.better+e.same)+same*e.better # all treatments before better or same, and this treatment better or same
+        nworse = worse*(e.same+e.worse)+same*e.worse # all treatments before worse or same, and this treatment worse or same
+        nsame = same*e.same # all treatments so far not effecting the BF
+        nconf = conf+better*e.worse+worse*e.better # all ealier better or same, and this worse
 
-
-        bl = [a for a in bl if a[2] != 0]
-        wl = [a for a in wl if a[2] != 0]
-        cl = [a for a in cl if a[2] != 0]
-        return bl, wl, cl, nl
-
-    def expand(self, better_list, worse_list, conf_list, neutral, T, E):
-        # T treatment,  E effect
-        """
-        expands one level of the tree
-        """
-        nbl = [] # new_better_list
-        nwl = [] # new_worse_list
-        ncl = [] # new_conflict_list
-
-        for a in better_list:
-            ncl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
-
-            nbl.append((a[0], a[1], a[2] * T.effects[E].same))
-            nbl.append((a[0] + 1, a[1] + [T.name], a[2] * T.effects[E].better))
-
-        for a in worse_list:
-            nwl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
-            nwl.append((a[0], a[1], a[2] * T.effects[E].same))
-            ncl.append((a[0] + 1, a[1] + [T.name], a[2] * T.effects[E].better))
-
-        for a in conf_list:
-            ncl.append((a[0] - 1, a[1] + [T.name], a[2] * T.effects[E].worse))
-            ncl.append((a[0], a[1], a[2] * T.effects[E].same))
-            ncl.append((a[0] + 1, a[1] + [T.name], a[2] * T.effects[E].better))
-
-        new_neutral = neutral * T.effects[E].same
-
-        return nbl, nwl, ncl, new_neutral
+        v =  self.get_conflicts(E, treatments[1:], nbetter, nsame, nworse, nconf, True) # Recursive
+        return v
 
     def generate_interferences(self, pc_list):
         for pc in pc_list:
+            plans = [pc.plan_a, pc.plan_b]
             for a in pc.plan_a.treatments:
                 for b in pc.plan_b.treatments:
-                    if frozenset([a, b]) in self.interference_table['1']:
-                        pc.interferences.add(Interference(frozenset([a, b]), 1))
-                    elif frozenset([a, b]) in self.interference_table['0.5']:
-                        pc.interferences.add(Interference(frozenset([a, b]), 0.5))
-                    elif frozenset([a, b]) in self.interference_table['-1']:
-                        pc.interferences.add(Interference(frozenset([a, b]), -1))
+                    pair = frozenset([a, b])
+                    if pair in self.interference_table['1']:
+                        pc.interferences.add(Interference(pair, 1, plans))
+                    elif pair in self.interference_table['0.5']:
+                        pc.interferences.add(Interference(pair, 0.5, plans))
+                    elif pair in self.interference_table['-1']:
+                        pc.interferences.add(Interference(pair, -1, plans))
 
     def generate_alerts(self, plan, pc_list):
         alerts = []
         warnings = []
 
+        print "Submitted plan", plan.treatments
+
         for pc in pc_list:
             if plan == pc.plan_a or plan == pc.plan_b:
                 for conf in pc.conflicts:
                     if conf.score >= 0.1:
-                        message = "Treatments " + ', '.join(str(a) for a in conf.conflicting_treatments) + " cause " + conf.body_function + " with a probability of " + str(conf.score)
+                        message = "Treatments " + ', '.join(str(a) for a in conf.conflicting_treatments) + " will have opposite effects on " + conf.body_function + " with a probability of " + str(conf.score)
                         alerts.append(message)
                     elif 0.05 < conf.score < 0.1:
-                        message = "Treatments " + ', '.join(str(a) for a in conf.conflicting_treatments) + " cause " + conf.body_function + " with a probability of " + str(conf.score)
+                        message = "Treatments " + ', '.join(str(a) for a in conf.conflicting_treatments) + " will have opposite effects on " + conf.body_function + " with a probability of " + str(conf.score)
                         warnings.append(message)
 
                 for conf in pc.interferences:
@@ -266,7 +243,7 @@ class PlanSystem():
                         message = " Treatments " + str(interaction[0]) + " and " + str(interaction[1]) + "have a dangerous interaction"
                         alerts.append(message)
                     elif conf.score == 0.5:
-                        message = " Treatments " + str(interaction[0]) + " and " + str(interaction[1]) + "have a slightly negative interaction"
+                        message = " Treatments " + str(interaction[0]) + " and " + str(interaction[1]) + " have a slightly negative interaction"
                         warnings.append(message)
 
         print "Alerts for Doctor", plan.doctor, ":"
@@ -282,11 +259,14 @@ if __name__ == '__main__':
     p_a_first = PlanSystem("data/real_treatments3.json")
     p_b_first = PlanSystem("data/real_treatments3.json")
 
-    p = PlanSystem("data/real_treatments3.json")
+    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+
+    print p.evaluate_conflicts([p.plans[0], p.plans[1]], "nausea")
+    print p.evaluate_conflicts([p.plans[1], p.plans[0]], "nausea")
 
     conflicts_a1 = p_a_first.add_plan("data/existing_plan.json")
     conflicts_a2 = p_a_first.add_plan("data/new_plan.json")
-
+    print "###########"
     conflicts_b1 = p_b_first.add_plan("data/new_plan.json")
     conflicts_b2 = p_b_first.add_plan("data/existing_plan.json")
 
@@ -295,6 +275,10 @@ if __name__ == '__main__':
     print "B FIRST"
     p_b_first.print_conflicts(conflicts_b2)
 
+
+    print "Interference", conflicts_a2[0].interferences
+    print "Interference", conflicts_b2[0].interferences
+
     # Use the treatment intersection to check if two plans are almost similar?
     # Or say that names must be unique?
     # conflicts_3 = p.add_plan("data/new_plan.json")
@@ -302,18 +286,13 @@ if __name__ == '__main__':
     #p.print_conflicts(conflicts_1)
     #p.print_conflicts(conflicts_2)
     #p.print_conflicts(conflicts_3)
-
     print "--------------------------------------------------------------------"
+    print "A FIRST"
+    p_a_first.generate_alerts(p_a_first.plans[1], conflicts_a2)
+    print "B FIRST"
+    p_b_first.generate_alerts(p_b_first.plans[1], conflicts_b2)
 
 
-    e1 = p_a_first.plans[0].effects
-    e2 = p_b_first.plans[1].effects
-
-    print list(e1['nausea'])[0].effects
-    print list(e2['nausea'])[1].effects
-    #print "A FIRST"
-    #p_a_first.generate_alerts(p_a_first.plans[0], conflicts_a2)
-    #print "B FIRST"
-    #p_b_first.generate_alerts(p_b_first.plans[0], conflicts_b2)
+    # Should say which plan it is conflicting with
 
 

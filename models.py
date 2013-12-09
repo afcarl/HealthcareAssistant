@@ -65,15 +65,13 @@ class PlanConflict():
         return "PC(" + str(self.plan_a) + ", " + str(self.plan_b) + ")"
 
 class Interference():
-    def __init__(self, treatments, score):
+    def __init__(self, treatments, score, plans):
         self.score = score
         self.conflicting_treatments = treatments
+        self.plans = plans
 
     def __repr__(self):
-        if type(self.conflicting_treatments) == frozenset:
-            return "Inter(" + str(list(self.conflicting_treatments)[0]) + ", " + str(list(self.conflicting_treatments)[1]) + ", " + str(self.score) + ")"
-        else:
-            return "Inter(" + str(self.conflicting_treatments.a) + ", " + str(self.conflicting_treatments.b) + ", " + str(self.score) + ")"
+        return "Inter(" + str(self.plans) + str(list(self.conflicting_treatments)[0]) + ", " + str(list(self.conflicting_treatments)[1]) + ", " + str(self.score) + ")"
 
 class Conflict():
 

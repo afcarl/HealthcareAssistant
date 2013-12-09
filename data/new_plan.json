@@ -3,6 +3,6 @@
 		"name": "Plan B",
 		"description": "Seizures",
 		"doctor": 2,
-		"treatments": ["tegretol", "aspirin"]
+		"treatments": ["tegretol", "aspirin","dihydroergotamine"]
 	}
 }

@@ -72,4 +72,4 @@ if __name__ == '__main__':
     v = ConflictVisualizer(p)
     B = v.plan_system.plans[0]
     A = v.plan_system.plans[1]
-    v.visualize([B])
+    v.visualize(p.plans)
