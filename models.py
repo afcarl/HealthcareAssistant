@@ -1,6 +1,5 @@
 class Treatment():
     """ A class representing all known treatments """
-
     def __init__(self, data):
         """ Initialize a treatment from a dict object with the necessary attributes"""
         self.name = data["name"]
@@ -22,13 +21,11 @@ class TreatmentEffect:
         self.better = float(better)
         self.same = float(same)
 
-
     def __repr__(self):
         return "TRE(" + str(self.worse) + " " + str(self.better) + " " + str(self.same) + ")"
 
 class Plan():
     """ A class for representing caretaker plans """
-
     def __init__(self, data, treatments):
         """ Initialize a plan from a dict object with the necessary attributes"""
         self.name = data["name"]
@@ -74,7 +71,6 @@ class Interference():
         return "Inter(" + str(self.plans) + str(list(self.conflicting_treatments)[0]) + ", " + str(list(self.conflicting_treatments)[1]) + ", " + str(self.score) + ")"
 
 class Conflict():
-
     def __init__(self, treatments):
         self.score = 0
         self.body_function = 0
