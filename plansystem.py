@@ -14,17 +14,17 @@ class PlanSystem():
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
         self.newplan = False
-        self.interference_table = {'-1':set(), '0.5':set(), '1':set()} # MR: can only take these values?
+        self.interference_table = {'-1':set(), '0.5':set(), '1':set()} 
 
         # Required
         self.load_treatments(treatments_path)
         # Optional, may start without plans
         if plans_path: self.load_plans(plans_path)
 
-        # Should add a method for loading plans
+        # checks whether a plan was recently added
         self.check_for_new_plans()
 
-        # Do calculations, move to a new method that is called when a new plan is added?
+        # generate the conflicts
         self.pc_list = self.generate_plan_conflicts()
         self.find_conflicting_effects()
         self.generate_interferences()
@@ -189,8 +189,9 @@ class PlanSystem():
 
     
     def evaluate_conflicts(self, plans, conflicting_effect):
-    # CAN CHECK MORE THAN TWO PLANS
-    # USING THE WHOLE EFFECT TABLE IS (MAYBE) NOT EFFICIENT
+	    """
+	    generates the list of treatments in plans for a given effect
+	    """
         treatments = []
         for plan in plans:
             for t in plan.treatments:
