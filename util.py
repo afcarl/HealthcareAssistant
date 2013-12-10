@@ -8,3 +8,10 @@ def timer(func):
 		print '%s took %0.3f ms' % (func.func_name, (t2-t1)*1000.0)
 		return res
 	return wrapper
+
+def printname(func):
+	def wrapper(*arg):
+		res = func(*arg)
+		print "Method called:", func.func_name, "with arguments:", arg[1:]
+		return res
+	return wrapper

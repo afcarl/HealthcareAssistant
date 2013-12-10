@@ -1,27 +1,390 @@
 {
-	"pumicort": {
-		"name": "pumicort",
-		"effects": {
-			"breathing": {
-				"worse": 0.1,
-				"same": 0.3,
-				"better": 0.6
-			},
-			"eating": {
-				"worse": 0.1,
-				"same": 0.3,
-				"better": 0.6
-			}
-		}
-	},
-	"penicilin": {
-		"name": "penicilin",
-		"effects": {
-			"breathing": {
-				"worse": 0.1,
-				"same": 0.3,
-				"better": 0.6
-			}
-		}
-	}
+  "erythromycin": {
+    "name": "erythromycin",
+    "interference": {
+        "erythromycin": 0, 
+        "dihydroergotamine": 0,
+        "prednisone": 0.5,
+        "lisinopril": 0,
+        "pulmicort": 0.5,
+        "tegretol": 1,
+        "aspirin": 0.5
+    },
+    "effects": {
+      "nausea": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "diarrhea": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "irregular_heartbeat": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "fight_infection": {
+        "worse": 0,
+        "same": 0.2,
+        "better": 0.8
+      }
+    }
+  },
+  "dihydroergotamine": {
+    "name": "dihydroergotamine",
+    "interference": {
+        "erythromycin": 0,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
+    "effects": {
+      "headache": {
+        "worse": 0.2,
+        "same": 0.2,
+        "better": 0.6
+      },
+      "nausea": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "diarrhea": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "irregular_heartbeat": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "muscle_stiffness": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      }
+    }
+  },
+  "prednisone": {
+    "name": "prednisone",
+    "interference": {
+        "erythromycin": 0.5,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0.5,
+        "aspirin": 0.5
+    },
+    "effects": {
+      "headache": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "nausea": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "diarrhea": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "irregular_heartbeat": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "muscle_stiffness": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "blurred_vision": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "immune_suppressant": {
+        "worse": 0,
+        "same": 0.11,
+        "better": 0.89
+      },
+      "fight_inflammation": {
+        "worse": 0,
+        "same": 0.11,
+        "better": 0.89
+      },
+      "fight_asthma": {
+        "worse": 0,
+        "same": 0.11,
+        "better": 0.89
+      }
+    }
+  },
+  "lisinopril": {
+    "name": "lisinopril",
+    "interference": {
+        "erythromycin": 0,
+        "dihydroergotamine": 0,
+        "prednisone": 0.5,
+        "lisinopril": 0,
+        "pulmicort": 0.5,
+        "tegretol": 0,
+        "aspirin": 0.5
+    },
+    "effects": {
+      "headache": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "nausea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "diarrhea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "irregular_heartbeat": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "muscle_stiffness": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "blurred_vision": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "lower_bp": {
+        "worse": 0,
+        "same": 0.11,
+        "better": 0.89
+      }
+    }
+  },
+  "pulmicort": {
+    "name": "pulmicort",
+    "interference": {
+        "erythromycin": 0.5,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
+    "effects": {
+      "headache": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "nausea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "diarrhea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "irregular_heartbeat": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "muscle_stiffness": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "blurred_vision": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "lower_bp": {
+        "worse": 0,
+        "same": 0.13,
+        "better": 0.87
+      }
+    }
+  },
+  "tegretol": {
+    "name": "tegretol",
+    "interference": {
+        "erythromycin": 1,
+        "dihydroergotamine": 0,
+        "prednisone": 0,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
+    "effects": {
+      "headache": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "nausea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "diarrhea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "muscle_stiffness": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "blurred_vision": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "fight_seizures": {
+        "worse": 0,
+        "same": 0.3,
+        "better": 0.7
+      }
+    }
+  },
+  "aspirin": {
+    "name": "aspirin",
+    "interference": {
+        "erythromycin": 0.5,
+        "dihydroergotamine": 0,
+        "prednisone": 0.5,
+        "lisinopril": 0.5,
+        "pulmicort": 0,
+        "tegretol": 0,
+        "aspirin": 0
+    },
+    "effects": {
+      "headache": {
+        "worse": 0.05,
+        "same": 0.52,
+        "better": 0.43
+      },
+      "nausea": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "stomach_cramping": {
+        "worse": "0.5",
+        "same": "0.5",
+        "better": 0
+      },
+      "fatigue": {
+        "worse": "0.2",
+        "same": "0.8",
+        "better": 0
+      },
+      "muscle_stiffness": {
+        "worse": 0,
+        "same": 0.3,
+        "better": 0.7
+      },
+      "blurred_vision": {
+        "worse": "0.1",
+        "same": "0.9",
+        "better": 0
+      },
+      "fight_inflammation": {
+        "worse": 0,
+        "same": 0.5,
+        "better": 0.5
+      },
+      "lower_bp": {
+        "worse": 0,
+        "same": 0.1,
+        "better": 0.9
+      }
+    }
+  }
 }

@@ -1,11 +1,13 @@
 import json, os, time
 import itertools as it
 from models import *
+from util import *
 
 class PlanSystem():
     """
 		The HealthcareAssistant system
 	"""
+    
     def __init__(self, treatments_path, plans_path=""):
 
         self.effect_table = {} # All treatments with a given effect
@@ -25,6 +27,7 @@ class PlanSystem():
         # TODO: FIX PROBLEM CHECKING FOR INITIAL LOAD
         if plans_path: self.add_initial_plans(plans_path, conflict_checking=True) # SET FALSE TO SKIP CONLFICT CHECKING
 
+    
     def load_treatments(self, path):
         """
             Builds a knowledge base of treatments and effects. 
@@ -40,6 +43,7 @@ class PlanSystem():
             for effect_name in t.effects:
                 self.effect_table.setdefault(effect_name, set()).add(t)
 
+    
     def build_interference_table(self):
         """
             Build an interference table from all known treatments. 
@@ -50,7 +54,7 @@ class PlanSystem():
                 if value: # not zero
                     self.interference_table[str(value)].add(frozenset([self.treatments[possible_interference], treatment]))
 
-
+    
     def add_initial_plans(self, path, conflict_checking=False):
         """
             Load a set of plans from the supplied path. Does not check for conflicts            
@@ -72,7 +76,7 @@ class PlanSystem():
                 self.generate_alerts(plan, pc)
             for message in self.messages:
                 print message
-
+    
     def all_plan_conflicts(self):
         """ 
             Checks all plans in the system pairwise for conflicts.
@@ -83,7 +87,7 @@ class PlanSystem():
         for a in plancombs:
             pc_list.append(self.find_conflicts(a[0], a[1]))
         return pc_list
-
+    
     def add_plan(self, path):
         with open(path, 'r') as data:
             raw_new_plan = json.load(data)
@@ -124,7 +128,7 @@ class PlanSystem():
             self.plans.append(new_plan)
         # in that case, the order must be changed :)
         return pc
-
+    
     def generate_plan_conflicts(self, new_plan):
         """
         generates an empty plan_conflict for each frozenset [of plans in a set of plans
@@ -134,8 +138,9 @@ class PlanSystem():
         for a in plancombs:
             pc_list.append(self.find_conflicts(a[0], a[1]))
 
-        return pc_list
+        return pc_list  
 
+    
     def find_conflicting_effects(self, pc_list):
         """
         creates plan_conflicts between two plans and generates the conflict tree for them. 
@@ -146,7 +151,7 @@ class PlanSystem():
             for c in pc.conflicts: # Does not help to sort this
                 conflict_probability = self.get_conflicts(c.body_function, c.conflicting_treatments)
                 c.score = conflict_probability
-
+    
     def find_conflicts(self, plan_a, plan_b):
         """
             Return all body functions that are affected by both plans
@@ -163,7 +168,7 @@ class PlanSystem():
             dummy_conflict.body_function = ce
             pc.conflicts.add(dummy_conflict)
         return pc
-
+    
     def evaluate_conflicts(self, plans, conflicting_effect):
         treatments = []
         for plan in plans:
@@ -171,7 +176,7 @@ class PlanSystem():
                 if t in self.effect_table[conflicting_effect]:
                     treatments.append(t)
         return treatments
-
+    
     def treatment_intersection(self, plan_a, plan_b):
         """
             Check if two plans use any of the same treatments
@@ -208,7 +213,7 @@ class PlanSystem():
 
         v =  self.get_conflicts(E, treatments[1:], nbetter, nsame, nworse, nconf, True) # Recursive
         return v
-
+    
     def generate_interferences(self, pc_list):
         for pc in pc_list:
             plans = (pc.plan_a, pc.plan_b)
@@ -221,7 +226,7 @@ class PlanSystem():
                         pc.interferences.add(Interference(pair, 0.5, plans))
                     elif pair in self.interference_table['-1']:
                         pc.interferences.add(Interference(pair, -1, plans))
-
+    
     def alternative_scoring_system(self, new_plan):
         """ 
             Alternative method for scoring plans
@@ -253,7 +258,7 @@ class PlanSystem():
             print "OLD SCORE", score[k]/float(counter[k])
             print "NEW SCORE", (score[k] + nscore.setdefault(k, 0))/float(counter[k] + ncounter.setdefault(k, 0))
 
-
+    
     def generate_alerts(self, plan, pc_list):
         alerts = []
         warnings = []
@@ -306,7 +311,7 @@ class PlanSystem():
                 self.messages.append(warning)
 
         # for message in self.messages: print messages
-
+    
     def print_messages(self):
         for message in self.messages:
             print message
@@ -315,17 +320,17 @@ class PlanSystem():
 if __name__ == '__main__':
 
     #print "Add all plans at once, and send messages to everyone"
-    #p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+    #p = PlanSystem("data/treatments.json", "data/real_plans.json")
 
     ### EXAMPLE 1 IN THE PAPER ####
-    p1 = PlanSystem("data/real_treatments3.json")
+    p1 = PlanSystem("data/treatments.json")
     p1.add_plan("data/existing_plan.json")
     p1.add_plan("data/new_plan.json")
     ### END EXAMPLE 1 ###
 
-    # p_b_first = PlanSystem("data/real_treatments3.json")
+    # p_b_first = PlanSystem("data/treatments.json")
 
-    #p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+    #p = PlanSystem("data/treatments.json", "data/real_plans.json")
 
     #print p.evaluate_conflicts([p.plans[0], p.plans[1]], "nausea")
     #print p.evaluate_conflicts([p.plans[1], p.plans[0]], "nausea")

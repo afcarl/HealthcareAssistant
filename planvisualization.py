@@ -67,7 +67,7 @@ class ConflictVisualizer:
 
 if __name__ == '__main__':
     from plansystem import PlanSystem
-    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+    p = PlanSystem("data/treatments.json", "data/real_plans.json")
     v = ConflictVisualizer(p)
     B = v.plan_system.plans[0]
     A = v.plan_system.plans[1]
