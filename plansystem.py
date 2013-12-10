@@ -222,9 +222,9 @@ class PlanSystem():
                     elif pair in self.interference_table['-1']:
                         pc.interferences.add(Interference(pair, -1, plans))
 
-    def alt_score(self, new_plan):
+    def alternative_scoring_system(self, new_plan):
         """ 
-            Basic scoring. 
+            Alternative method for scoring plans
             Give a score before and after a new plan is added.
             Not sure how this scoring can be used to generate warnings.
         """
@@ -244,6 +244,8 @@ class PlanSystem():
                     values = treatment.effects[effect]
                     nscore[effect] = nscore.setdefault(effect, 0) + values.better - values.worse
                     ncounter[effect] = ncounter.setdefault(effect, 0) + 1
+
+        return nscore
 
         for k in score:
             print k
@@ -312,14 +314,14 @@ class PlanSystem():
 
 if __name__ == '__main__':
 
-    print "Add all plans at once, and send messages to everyone"
-    p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
+    #print "Add all plans at once, and send messages to everyone"
+    #p = PlanSystem("data/real_treatments3.json", "data/real_plans.json")
 
-    print "Add plans one at a time"
+    ### EXAMPLE 1 IN THE PAPER ####
     p1 = PlanSystem("data/real_treatments3.json")
     p1.add_plan("data/existing_plan.json")
     p1.add_plan("data/new_plan.json")
-
+    ### END EXAMPLE 1 ###
 
     # p_b_first = PlanSystem("data/real_treatments3.json")
 
