@@ -5,34 +5,32 @@ from util import *
 
 class PlanSystem():
     """
-		The HealthcareAssistant system
+		The main system
 	"""
-    
     def __init__(self, treatments_path, plans_path=""):
 
         self.effect_table = {} # All treatments with a given effect
         self.treatments = {} # All known treatments
         self.plans = [] # All plans in the system
-        self.interference_table = {'-1':set(), '0.5':set(), '1':set()} # MR: can only take these values?
+        self.interference_table = {'-1':set(), '0.5':set(), '1':set()}
 
         # Message queue to store messages before they are displayed. 
+        # In a real system this would a GUI for the users
         self.messages = [] 
 
         # Load the treadments database. 
+        # In the prototype, we assyme treatments are known beforehand. 
         self.load_treatments(treatments_path)
         # Build the interference table.
         self.build_interference_table()
 
         # To calculate conflicts, load them one by one
-        # TODO: FIX PROBLEM CHECKING FOR INITIAL LOAD
         if plans_path: self.add_initial_plans(plans_path, conflict_checking=True) # SET FALSE TO SKIP CONLFICT CHECKING
-
     
     def load_treatments(self, path):
         """
             Builds a knowledge base of treatments and effects. 
-            The system needs to know about all treatments in all plans that are
-            submitted
+            Loads all treatments at once when the system initialize
         """
         with open(path, 'r') as data:
             raw_treatments = json.load(data)
@@ -47,7 +45,7 @@ class PlanSystem():
     def build_interference_table(self):
         """
             Build an interference table from all known treatments. 
-            Can only be done after all treatments are loaded.
+            Can only be done after the treatments have been loaded.
         """
         for treatment in self.treatments.values():
             for possible_interference, value in treatment.interference.iteritems():
@@ -57,7 +55,7 @@ class PlanSystem():
     
     def add_initial_plans(self, path, conflict_checking=False):
         """
-            Load a set of plans from the supplied path. Does not check for conflicts            
+            Load an initial set of plans. Can either check or skip checking for conflicts.
         """
         with  open(path, 'r') as data:
             raw_plans = json.load(data)
@@ -66,6 +64,7 @@ class PlanSystem():
             p = Plan(raw_plans[rp], self.treatments)
             self.plans.append(p)
 
+        # If conflict checking is on, check pairwise for conflicts and alert all doctors.
         if conflict_checking:
             pc = self.all_plan_conflicts() # potential conflicts
             self.find_conflicting_effects(pc) # in-place
@@ -79,7 +78,7 @@ class PlanSystem():
     
     def all_plan_conflicts(self):
         """ 
-            Checks all plans in the system pairwise for conflicts.
+            Pairwise check of all plans in the system for conflicts. 
             Can be used for the systems inital load
         """
         plancombs = it.combinations(self.plans, 2)
@@ -89,49 +88,49 @@ class PlanSystem():
         return pc_list
     
     def add_plan(self, path):
+        """
+            Add a new plan to the system. This will check for conflicts, and print 
+            sample alerts and warnings for the doctors.
+        """
         with open(path, 'r') as data:
             raw_new_plan = json.load(data)
 
         new_plan = Plan(raw_new_plan.values()[0], self.treatments)
-        # new_plan.status = "unconfirmed" # Let the user confirm that he wants to add the plan after the conflicts are displayed?
 
+        # Check if any of the treatments is already in use on the patient.
         intersection = {}
         for plan in self.plans:
             i = self.treatment_intersection(plan, new_plan)
             if i:
                 intersection[plan] = i
         if intersection:
-            print "WE HAVE INTERSECION", intersection
             for i in intersection:
                 self.messages.append("The treatment(s)" + str(intersection[i]) + " is already in plan " + str(i))
 
-        # Check for conflicts here
+        # Check if the added plan conflicts with any existing plans
         pc = self.generate_plan_conflicts(new_plan)
         self.find_conflicting_effects(pc) # in-place
-        self.generate_interferences(pc)
+        self.generate_interferences(pc) # in-place
 
-        self.generate_alerts(new_plan, pc)
+        self.generate_alerts(new_plan, pc) # Generate alerts and add to the message queue.
 
-
-        # Do this only if the user choose to continue after the alerts?
-        # So print all messages here, then let the user type (y/n) to add the plan to the system
+        # Print all messages in the queue. The user must confirm that he/she wants to add the plan
         print "###################################"
         if self.messages:
             self.print_messages()
             print "----------------------------"
             confirm = raw_input("After looking at the messages, do you still want to add " + str(new_plan) + " to the system? (y/n)")
             if confirm.lower() == "y": 
-               print "Plan added:", new_plan
-            self.plans.append(new_plan)
-        else:
+                print "Plan added:", new_plan
+                self.plans.append(new_plan)
+        else: # no messages, no conflicts, safe to add plan
             print "Plan added:", new_plan
             self.plans.append(new_plan)
-        # in that case, the order must be changed :)
         return pc
     
     def generate_plan_conflicts(self, new_plan):
         """
-        generates an empty plan_conflict for each frozenset [of plans in a set of plans
+            Generate an empty plan_conflict for each pair of the new and existing plans
         """
         plancombs = [(plan, new_plan) for plan in self.plans if not plan == new_plan]
         pc_list = []
@@ -139,15 +138,13 @@ class PlanSystem():
             pc_list.append(self.find_conflicts(a[0], a[1]))
 
         return pc_list  
-
     
     def find_conflicting_effects(self, pc_list):
         """
-        creates plan_conflicts between two plans and generates the conflict tree for them. 
-        Modifies pc_list in-place for now.
+            Calculate scores for the plan conflicts in the input. 
+            Modifies the objects in place
         """
         for pc in pc_list: # Just one plan conflict when we have one plan and add one plan
-            zero_conflicts = set()
             for c in pc.conflicts: # Does not help to sort this
                 conflict_probability = self.get_conflicts(c.body_function, c.conflicting_treatments)
                 c.score = conflict_probability
@@ -170,6 +167,9 @@ class PlanSystem():
         return pc
     
     def evaluate_conflicts(self, plans, conflicting_effect):
+        """
+            Helper for the find_conflicts
+        """
         treatments = []
         for plan in plans:
             for t in plan.treatments:
@@ -215,6 +215,10 @@ class PlanSystem():
         return v
     
     def generate_interferences(self, pc_list):
+        """
+            Check for interfering treatments
+            Updates the pc_list in place
+        """
         for pc in pc_list:
             plans = (pc.plan_a, pc.plan_b)
             for a in pc.plan_a.treatments:
@@ -229,9 +233,9 @@ class PlanSystem():
     
     def alternative_scoring_system(self, new_plan):
         """ 
-            Alternative method for scoring plans
+            Alternative method for scoring plans.
+            Not used in the final implementation.
             Give a score before and after a new plan is added.
-            Not sure how this scoring can be used to generate warnings.
         """
         score = {}
         counter = {}
@@ -260,6 +264,9 @@ class PlanSystem():
 
     
     def generate_alerts(self, plan, pc_list):
+        """
+            Create alert messages and add them to the message queue
+        """
         alerts = []
         warnings = []
 
@@ -275,9 +282,9 @@ class PlanSystem():
                     msg_args["treatments"] = ', '.join([str(a) for a in conf.conflicting_treatments])
 
                     message = opposite_msg % msg_args
-                    if conf.score >= 0.1:
+                    if conf.score >= 0.2:
                         alerts.append(message)
-                    elif 0.05 < conf.score < 0.1:
+                    elif 0.1 < conf.score < 0.2:
                         warnings.append(message)
 
                 # To get the messages in the desired order
@@ -313,14 +320,17 @@ class PlanSystem():
         # for message in self.messages: print messages
     
     def print_messages(self):
+        """
+            Print all messages in the queue and empty the queue
+        """
         for message in self.messages:
             print message
         self.messages = []
 
 if __name__ == '__main__':
 
-    #print "Add all plans at once, and send messages to everyone"
-    #p = PlanSystem("data/treatments.json", "data/real_plans.json")
+    # print "Add all plans at once, and send messages to everyone"
+    # p = PlanSystem("data/treatments.json", "data/real_plans.json")
 
     ### EXAMPLE 1 IN THE PAPER ####
     p1 = PlanSystem("data/treatments.json")
@@ -328,53 +338,4 @@ if __name__ == '__main__':
     p1.add_plan("data/new_plan.json")
     ### END EXAMPLE 1 ###
 
-    # p_b_first = PlanSystem("data/treatments.json")
-
-    #p = PlanSystem("data/treatments.json", "data/real_plans.json")
-
-    #print p.evaluate_conflicts([p.plans[0], p.plans[1]], "nausea")
-    #print p.evaluate_conflicts([p.plans[1], p.plans[0]], "nausea")
-
-    # t = time.clock()
-    # for i in range(100):
-    #     conflicts_a1 = p_a_first.add_plan("data/new_plan.json")
-    # print "TIMER", time.clock()-t
-    # print len(p_a_first.plans)
-
-    # p_a_first.add_plan("data/existing_plan.json")
-    # p_a_first.add_plan("data/new_plan.json")
-    # p_a_first.alt_score(p_a_first.plans[1])
-
-
-    #conflicts_a2 = p_a_first.add_plan("data/new_plan.json")
-
-    # print "###########"
-    # conflicts_b1 = p_b_first.add_plan("data/new_plan.json")
-    # conflicts_b2 = p_b_first.add_plan("data/existing_plan.json")
-
-    #print "A FIRST"
-    #p_a_first.print_conflicts(conflicts_a2)
-    #print "B FIRST"
-    #p_b_first.print_conflicts(conflicts_b2)
-
-
-    # print "Interference", conflicts_a2[0].interferences
-    # print "Interference", conflicts_b2[0].interferences
-
-    # # Use the treatment intersection to check if two plans are almost similar?
-    # # Or say that names must be unique?
-    # # conflicts_3 = p.add_plan("data/new_plan.json")
-    # #print conflicts_2
-    # #p.print_conflicts(conflicts_1)
-    # #p.print_conflicts(conflicts_2)
-    # #p.print_conflicts(conflicts_3)
-    # print "--------------------------------------------------------------------"
-    # print "A FIRST"
-    #p_a_first.generate_alerts(p_a_first.plans[1], conflicts_a2)
-    # print "B FIRST"
-    # p_b_first.generate_alerts(p_b_first.plans[1], conflicts_b2)
-
-
-    # # Should say which plan it is conflicting with
-
-
+    
